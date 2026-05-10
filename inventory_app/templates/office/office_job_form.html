@@ -1,0 +1,1466 @@
+{% extends 'office/office_base.html' %}
+{% block title %}{{ page_title }} — Pest Control OS{% endblock %}
+
+{% block extra_head %}
+  <!-- Select2 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+  /* ── Form Page Layout ───────────────────────────────────────────────────── */
+  .form-page-wrapper {
+    max-width: 820px;
+    margin: 0 auto;
+  }
+
+  /* ── Form Card ──────────────────────────────────────────────────────────── */
+  .form-card {
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    border: 1px solid #f0f2f7;
+    overflow: hidden;
+  }
+  .form-card-header {
+    padding: 1.75rem 2rem;
+    border-bottom: 1px solid #f0f2f7;
+    background: #fafbff;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .form-card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+  }
+  .form-card-icon.create { background: #eff6ff; color: #2563eb; }
+  .form-card-icon.edit   { background: #fef3c7; color: #d97706; }
+
+  .form-card-header h1 {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
+    letter-spacing: -0.3px;
+  }
+  .form-card-header p {
+    font-size: 0.78rem;
+    color: #94a3b8;
+    margin: 0.2rem 0 0;
+  }
+  .form-card-body {
+    padding: 2rem;
+  }
+
+  /* ── Field Groups ───────────────────────────────────────────────────────── */
+  .field-row {
+    display: grid;
+    gap: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+  .field-row.cols-2 { grid-template-columns: 1fr 1fr; }
+  .field-row.cols-1 { grid-template-columns: 1fr; }
+
+  @media (max-width: 600px) {
+    .field-row.cols-2 { grid-template-columns: 1fr; }
+  }
+
+  .field-group { display: flex; flex-direction: column; gap: 0.4rem; }
+  .field-group label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #374151;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .field-group .field-hint {
+    font-size: 0.73rem;
+    color: #94a3b8;
+    margin-top: 0.25rem;
+  }
+
+  /* Polish the native inputs to match our design system */
+  .field-group .form-control,
+  .field-group .form-select {
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 0.6rem 0.9rem;
+    font-size: 0.9rem;
+    color: #1e293b;
+    background-color: #ffffff;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .field-group .form-control:focus,
+  .field-group .form-select:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+    outline: none;
+  }
+  .field-group .form-control.is-invalid,
+  .field-group .form-select.is-invalid {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+  }
+  .field-group textarea.form-control { resize: vertical; min-height: 90px; }
+
+  /* Input group fixes for form-select */
+  .field-group .input-group > .form-select {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+  .field-group .input-group .btn {
+    border-color: #e2e8f0;
+    color: #475569;
+  }
+  .field-group .input-group .btn:hover {
+    background: #f1f5f9;
+  }
+
+  /* Inline error messages */
+  .field-errors {
+    list-style: none;
+    padding: 0;
+    margin: 0.3rem 0 0;
+  }
+  .field-errors li {
+    font-size: 0.78rem;
+    color: #dc2626;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .field-errors li::before {
+    content: '⚠';
+    font-size: 0.7rem;
+  }
+
+  /* Section divider labels */
+  .form-section-label {
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #cbd5e1;
+    margin: 0.5rem 0 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .form-section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #f1f5f9;
+  }
+
+  /* ── Action Footer ──────────────────────────────────────────────────────── */
+  .form-card-footer {
+    padding: 1.25rem 2rem;
+    border-top: 1px solid #f0f2f7;
+    background: #fafbff;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+  }
+  .btn-cancel {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #64748b;
+    background: transparent;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 0.55rem 1.2rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s;
+  }
+  .btn-cancel:hover {
+    border-color: #94a3b8;
+    color: #374151;
+    background: #f8fafc;
+  }
+  .btn-submit {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #ffffff;
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    border: none;
+    border-radius: 10px;
+    padding: 0.6rem 1.5rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    transition: all 0.15s;
+  }
+  .btn-submit:hover {
+    background: linear-gradient(135deg, #1d4ed8, #2563eb);
+    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.4);
+    transform: translateY(-1px);
+  }
+  .btn-submit:active { transform: translateY(0); }
+
+  {% if is_edit %}
+  .btn-submit {
+    background: linear-gradient(135deg, #d97706, #f59e0b);
+    box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
+  }
+  .btn-submit:hover {
+    background: linear-gradient(135deg, #b45309, #d97706);
+    box-shadow: 0 6px 18px rgba(217, 119, 6, 0.4);
+  }
+  {% endif %}
+
+  /* Non-field errors banner */
+  .form-errors-banner {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.85rem;
+    color: #b91c1c;
+    font-weight: 600;
+  }
+  .form-errors-banner ul { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+
+  /* ── Mad Libs Style ─────────────────────────────────────────────────────── */
+  .mad-libs-container {
+    font-size: 1.6rem;
+    line-height: 2.8rem;
+    color: #1e293b;
+    font-weight: 500;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: #f8fafc;
+    border-radius: 16px;
+    border: 1px dashed #cbd5e1;
+  }
+  .mad-libs-input {
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0 0.4rem;
+  }
+  .mad-libs-input .form-control,
+  .mad-libs-input .form-select {
+    font-size: 1.4rem;
+    padding: 0.25rem 0.5rem;
+    border: none;
+    border-bottom: 2px solid #3b82f6;
+    border-radius: 0;
+    background: transparent;
+    color: #2563eb;
+    font-weight: 700;
+    text-align: center;
+    box-shadow: none !important;
+    min-width: 80px;
+    height: auto;
+  }
+  .mad-libs-input .form-control:focus,
+  .mad-libs-input .form-select:focus {
+    border-bottom-color: #1d4ed8;
+    background: rgba(59, 130, 246, 0.05);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-page-wrapper">
+
+  <!-- Breadcrumb -->
+  <nav class="mb-4" style="font-size:0.8rem; color:#94a3b8;">
+    <a href="{% url 'office_dashboard' %}" style="color:#94a3b8; text-decoration:none;">Dashboard</a>
+    <span class="mx-2">/</span>
+    <a href="{% url 'office_job_list' %}" style="color:#94a3b8; text-decoration:none;">All Jobs</a>
+    <span class="mx-2">/</span>
+    <span style="color:#1e293b; font-weight:600;">{{ page_title }}</span>
+  </nav>
+
+  <div class="form-card">
+
+    <!-- Card Header -->
+    <div class="form-card-header">
+      <div class="form-card-icon {% if is_edit %}edit{% else %}create{% endif %}">
+        {% if is_edit %}
+          <i class="ti ti-edit"></i>
+        {% else %}
+          <i class="ti ti-circle-plus"></i>
+        {% endif %}
+      </div>
+      <div>
+        <h1>{{ form_title }}</h1>
+        <p>{{ form_subtitle }}</p>
+      </div>
+      <div class="ms-auto d-flex gap-2">
+          <button type="button" id="btn-copy-data" class="btn btn-outline-secondary rounded-pill px-3 shadow-sm" style="font-size: 0.85rem; font-weight: 600;">
+            <i class="ti ti-copy me-1"></i> Copy Data
+          </button>
+          <button type="button" id="btn-paste-data" class="btn btn-primary rounded-pill px-3 shadow-sm" style="font-size: 0.85rem; font-weight: 600; display: inline-flex;">
+            <i class="ti ti-clipboard-copy me-1"></i> Paste Data
+          </button>
+      </div>
+    </div>
+
+    <!-- Card Body -->
+    <div class="form-card-body">
+      <form method="post" novalidate id="job-form">
+        {% csrf_token %}
+
+        <!-- Non-field errors -->
+        {% if form.non_field_errors %}
+        <div class="form-errors-banner">
+          <i class="ti ti-alert-circle me-2"></i>Please correct the errors below:
+          <ul>
+            {% for error in form.non_field_errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+
+
+        <!-- ── Section: Certificate & Regulatory Details (MOVED TO TOP) ── -->
+        <div class="form-section-label"><i class="ti ti-file-certificate me-1"></i>Certificate &amp; Regulatory Details</div>
+            
+            <div class="field-row cols-2" style="margin-bottom:1.25rem;">
+              <div class="field-group">
+                <label for="{{ form.certificate_number.id_for_label }}">{{ form.certificate_number.label }}</label>
+                {{ form.certificate_number }}
+                {% if form.certificate_number.errors %}<ul class="field-errors">{% for e in form.certificate_number.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+              </div>
+              <div class="field-group">
+                <label for="{{ form.treatment_provider_id.id_for_label }}">{{ form.treatment_provider_id.label }}</label>
+                {{ form.treatment_provider_id }}
+                {% if form.treatment_provider_id.errors %}<ul class="field-errors">{% for e in form.treatment_provider_id.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+              </div>
+            </div>
+
+            <div class="field-row cols-2" style="margin-bottom:1.25rem;">
+              <div class="field-group">
+                <label for="{{ form.customer_bill_to.id_for_label }}">{{ form.customer_bill_to.label }}</label>
+                {{ form.customer_bill_to }}
+                {% if form.customer_bill_to.errors %}<ul class="field-errors">{% for e in form.customer_bill_to.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+              </div>
+              <div class="field-group">
+                <label for="{{ form.accreditation_number.id_for_label }}">{{ form.accreditation_number.label }}</label>
+                {{ form.accreditation_number }}
+                {% if form.accreditation_number.errors %}<ul class="field-errors">{% for e in form.accreditation_number.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+              </div>
+            </div>
+
+            <div class="field-row cols-2" style="margin-bottom:1.25rem;">
+              <div class="field-group">
+                <label for="{{ form.name_of_fumigant.id_for_label }}">{{ form.name_of_fumigant.label }}</label>
+                {{ form.name_of_fumigant }}
+                {% if form.name_of_fumigant.errors %}<ul class="field-errors">{% for e in form.name_of_fumigant.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+              </div>
+              <div class="field-group">
+                <label for="{{ form.container_type_description.id_for_label }}">{{ form.container_type_description.label }}</label>
+                {{ form.container_type_description }}
+                {% if form.container_type_description.errors %}<ul class="field-errors">{% for e in form.container_type_description.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+              </div>
+            </div>
+            
+            <div class="field-row" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem; margin-bottom:1.25rem;">
+              <div class="field-group">
+                <label for="{{ form.total_containers.id_for_label }}">{{ form.total_containers.label }}</label>
+                {{ form.total_containers }}
+                {% if form.total_containers.errors %}<ul class="field-errors">{% for e in form.total_containers.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+              </div>
+              <div class="field-group">
+                <label for="{{ form.seal_numbers.id_for_label }}">{{ form.seal_numbers.label }}</label>
+                {{ form.seal_numbers }}
+                {% if form.seal_numbers.errors %}<ul class="field-errors">{% for e in form.seal_numbers.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+              </div>
+              <div class="field-group mt-4">
+                 <div class="form-check pt-2">
+                   {{ form.print_container_size }}
+                   <label class="form-check-label fw-bold" style="text-transform: uppercase; font-size: 0.78rem;" for="{{ form.print_container_size.id_for_label }}">
+                     Print Container Size
+                   </label>
+                 </div>
+                 {% if form.print_container_size.errors %}<ul class="field-errors">{% for e in form.print_container_size.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+              </div>
+            </div>
+
+        <!-- ── Section: Job Identity ── -->
+        {% if not is_edit %}
+        <div class="form-section-label">Job Assignment</div>
+
+        <!-- Mad Libs Layout -->
+        <div class="mad-libs-container text-center">
+            Take 
+            <div class="mad-libs-input" style="width: 100px;">{{ form.chemical_amount }}</div> 
+            <div class="mad-libs-input" style="width: 120px;">{{ form.chemical_unit }}</div> 
+            of 
+            <div class="mad-libs-input" style="width: 220px;">{{ form.chemical_item }}</div> 
+            from 
+            <div class="mad-libs-input" style="width: 280px;">{{ form.source_warehouse }}</div> 
+            and go to 
+            <div class="mad-libs-input" style="width: 320px;">{{ form.execution_address }}</div> 
+            for 
+            <div class="mad-libs-input" style="width: 280px;">{{ form.title }}</div>.<br> 
+            Scheduled for: 
+            <div class="mad-libs-input" style="width: 200px;">{{ form.scheduled_date }}</div>.
+        </div>
+        {% else %}
+        <div class="form-section-label">Job Assignment</div>
+        <div class="field-row cols-2" style="margin-bottom:1.25rem;">
+          <div class="field-group">
+            <label for="{{ form.title.id_for_label }}">{{ form.title.label }}</label>
+            {{ form.title }}
+            {% if form.title.errors %}<ul class="field-errors">{% for e in form.title.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+          <div class="field-group">
+            <label for="{{ form.scheduled_date.id_for_label }}">{{ form.scheduled_date.label }}</label>
+            {{ form.scheduled_date }}
+            {% if form.scheduled_date.errors %}<ul class="field-errors">{% for e in form.scheduled_date.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+        </div>
+        <div class="field-row cols-2" style="margin-bottom:1.25rem;">
+          <div class="field-group">
+            <label for="{{ form.execution_address.id_for_label }}">{{ form.execution_address.label }}</label>
+            {{ form.execution_address }}
+            {% if form.execution_address.errors %}<ul class="field-errors">{% for e in form.execution_address.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+          <div class="field-group">
+            <label for="{{ form.source_warehouse.id_for_label }}">{{ form.source_warehouse.label }}</label>
+            {{ form.source_warehouse }}
+            {% if form.source_warehouse.errors %}<ul class="field-errors">{% for e in form.source_warehouse.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+        </div>
+        <div class="field-row" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem; margin-bottom:1.25rem;">
+          <div class="field-group">
+            <label for="{{ form.chemical_amount.id_for_label }}">{{ form.chemical_amount.label }}</label>
+            {{ form.chemical_amount }}
+            {% if form.chemical_amount.errors %}<ul class="field-errors">{% for e in form.chemical_amount.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+          <div class="field-group">
+            <label for="{{ form.chemical_unit.id_for_label }}">{{ form.chemical_unit.label }}</label>
+            {{ form.chemical_unit }}
+            {% if form.chemical_unit.errors %}<ul class="field-errors">{% for e in form.chemical_unit.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+          <div class="field-group">
+            <label for="{{ form.chemical_item.id_for_label }}">{{ form.chemical_item.label }}</label>
+            {{ form.chemical_item }}
+            {% if form.chemical_item.errors %}<ul class="field-errors">{% for e in form.chemical_item.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+        </div>
+        {% endif %}
+
+
+        <div class="field-row cols-1">
+          <!-- Container Number -->
+          <div class="field-group">
+            <label for="{{ form.container_number.id_for_label }}">
+              <i class="ti ti-container me-1"></i>{{ form.container_number.label }}
+            </label>
+            {{ form.container_number }}
+            {% if form.container_number.errors %}
+              <ul class="field-errors">
+                {% for e in form.container_number.errors %}<li>{{ e }}</li>{% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="field-row cols-2">
+          <div class="field-group">
+            <label for="{{ form.branch.id_for_label }}">
+              <i class="ti ti-git-branch me-1"></i>{{ form.branch.label }}
+            </label>
+            {{ form.branch }}
+            {% if form.branch.errors %}
+              <ul class="field-errors">
+                {% for e in form.branch.errors %}<li>{{ e }}</li>{% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+
+          <div class="field-group">
+            <label for="{{ form.customer_id_bill_to.id_for_label }}">
+              <i class="ti ti-receipt-2 me-1"></i>{{ form.customer_id_bill_to.label }}
+            </label>
+            {{ form.customer_id_bill_to }}
+            {% if form.customer_id_bill_to.errors %}
+              <ul class="field-errors">
+                {% for e in form.customer_id_bill_to.errors %}<li>{{ e }}</li>{% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="field-row cols-1">
+          <div class="field-group">
+            <label for="{{ form.stock_warehouse.id_for_label }}">
+              <i class="ti ti-building-warehouse me-1"></i>{{ form.stock_warehouse.label }}
+            </label>
+            {{ form.stock_warehouse }}
+            {% if form.stock_warehouse.errors %}
+              <ul class="field-errors">
+                {% for e in form.stock_warehouse.errors %}<li>{{ e }}</li>{% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- ── Section: Logistics & Parties ── -->
+        <div class="form-section-label">Logistics &amp; Parties</div>
+
+        <div class="field-row cols-2" style="margin-bottom:1.25rem;">
+          <div class="field-group">
+            <label for="{{ form.cha.id_for_label }}">
+              <i class="ti ti-briefcase me-1"></i>{{ form.cha.label }}
+            </label>
+            <div class="input-group">
+              {{ form.cha }}
+              <button class="btn btn-outline-secondary" type="button" onclick="openQuickEditModal('cha', 'add')" title="Add New CHA"><i class="ti ti-plus"></i></button>
+              <button class="btn btn-outline-secondary" type="button" onclick="openQuickEditModal('cha', 'edit')" title="Edit Selected CHA"><i class="ti ti-edit"></i></button>
+            </div>
+            {% if form.cha.errors %}<ul class="field-errors">{% for e in form.cha.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+
+          <div class="field-group">
+            <label for="{{ form.exporter.id_for_label }}">
+              <i class="ti ti-ship me-1"></i>{{ form.exporter.label }}
+            </label>
+            <div class="input-group">
+              {{ form.exporter }}
+              <button class="btn btn-outline-secondary" type="button" onclick="openQuickEditModal('exporter', 'add')" title="Add New Exporter"><i class="ti ti-plus"></i></button>
+              <button class="btn btn-outline-secondary" type="button" onclick="openQuickEditModal('exporter', 'edit')" title="Edit Selected Exporter"><i class="ti ti-edit"></i></button>
+            </div>
+            {% if form.exporter.errors %}<ul class="field-errors">{% for e in form.exporter.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+        </div>
+
+        <div class="field-row" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem; margin-bottom:1.25rem; align-items: start;">
+          <div class="field-group mt-3">
+             <div class="form-check form-switch pt-2">
+               {{ form.is_third_party_vendor }}
+               <label class="form-check-label fw-bold" for="{{ form.is_third_party_vendor.id_for_label }}">
+                 Third Party Vendor
+               </label>
+               <div class="field-hint" style="margin-top: 0;">Is this job executed by a 3rd party?</div>
+             </div>
+             {% if form.is_third_party_vendor.errors %}<ul class="field-errors">{% for e in form.is_third_party_vendor.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+          
+          <div class="field-group" id="third-party-site-group" style="display: none;">
+             <label for="{{ form.site_location.id_for_label }}">{{ form.site_location.label }}</label>
+             {{ form.site_location }}
+             {% if form.site_location.errors %}<ul class="field-errors">{% for e in form.site_location.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+
+          <div class="field-group" id="third-party-address-group" style="display: none;">
+             <label for="{{ form.working_address.id_for_label }}">{{ form.working_address.label }}</label>
+             {{ form.working_address }}
+             {% if form.working_address.errors %}<ul class="field-errors">{% for e in form.working_address.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+        </div>
+
+        <!-- ── Section: Cargo & Details ── -->
+        <div class="form-section-label">Cargo &amp; Operations</div>
+
+        <div class="field-row cols-1" style="margin-bottom:1.25rem;">
+          <div class="field-group">
+            <label for="{{ form.task_description.id_for_label }}">{{ form.task_description.label }}</label>
+            {{ form.task_description }}
+            {% if form.task_description.errors %}<ul class="field-errors">{% for e in form.task_description.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+        </div>
+        
+        <div class="field-row cols-2" style="margin-bottom:1.25rem;">
+          <div class="field-group">
+            <label for="{{ form.subject.id_for_label }}">{{ form.subject.label }}</label>
+            {{ form.subject }}
+            {% if form.subject.errors %}<ul class="field-errors">{% for e in form.subject.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+          <div class="field-group">
+            <label for="{{ form.certificate_name.id_for_label }}">{{ form.certificate_name.label }}</label>
+            {{ form.certificate_name }}
+            {% if form.certificate_name.errors %}<ul class="field-errors">{% for e in form.certificate_name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+        </div>
+
+        <div class="field-row cols-2" style="margin-bottom:1.25rem;">
+          <div class="field-group">
+            <label for="{{ form.cargo_description.id_for_label }}">{{ form.cargo_description.label }}</label>
+            {{ form.cargo_description }}
+            {% if form.cargo_description.errors %}<ul class="field-errors">{% for e in form.cargo_description.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+          <div class="field-group">
+            <label for="{{ form.quantity_pkgs.id_for_label }}">{{ form.quantity_pkgs.label }}</label>
+            {{ form.quantity_pkgs }}
+            {% if form.quantity_pkgs.errors %}<ul class="field-errors">{% for e in form.quantity_pkgs.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+        </div>
+
+        <div class="field-row cols-1" style="margin-bottom:1.25rem;">
+          <div class="field-group">
+            <label for="{{ form.other_supporting_work.id_for_label }}">{{ form.other_supporting_work.label }}</label>
+            {{ form.other_supporting_work }}
+            {% if form.other_supporting_work.errors %}<ul class="field-errors">{% for e in form.other_supporting_work.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+        </div>
+
+        <!-- ── Section: Export & Shipping Logistics ── -->
+        <div class="form-section-label" style="color: #4f46e5;"><i class="ti ti-plane-departure me-1"></i>Export &amp; Shipping Logistics</div>
+        
+        <div class="field-row cols-2" style="margin-bottom:1.25rem;">
+          <div class="field-group">
+            <label for="{{ form.client.id_for_label }}">{{ form.client.label }}</label>
+            <div class="input-group">
+              {{ form.client }}
+              <button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#createClientModal" title="Add New Client">
+                <i class="ti ti-plus"></i>
+              </button>
+            </div>
+            {% if form.client.errors %}<ul class="field-errors">{% for e in form.client.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+          <div class="field-group">
+            <label for="{{ form.vessel_voyage.id_for_label }}">{{ form.vessel_voyage.label }}</label>
+            {{ form.vessel_voyage }}
+            {% if form.vessel_voyage.errors %}<ul class="field-errors">{% for e in form.vessel_voyage.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+        </div>
+
+        <div class="field-row cols-2" style="margin-bottom:1.25rem;">
+          <div class="field-group">
+            <label for="{{ form.port_of_loading.id_for_label }}">{{ form.port_of_loading.label }}</label>
+            {{ form.port_of_loading }}
+            {% if form.port_of_loading.errors %}<ul class="field-errors">{% for e in form.port_of_loading.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+          <div class="field-group">
+            <label for="{{ form.destination_country.id_for_label }}">{{ form.destination_country.label }}</label>
+            {{ form.destination_country }}
+            {% if form.destination_country.errors %}<ul class="field-errors">{% for e in form.destination_country.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+        </div>
+
+        <div class="field-row cols-2" style="margin-bottom:1.25rem;">
+          <div class="field-group">
+            <label for="{{ form.commodity_country_of_origin.id_for_label }}">{{ form.commodity_country_of_origin.label }}</label>
+            {{ form.commodity_country_of_origin }}
+            {% if form.commodity_country_of_origin.errors %}<ul class="field-errors">{% for e in form.commodity_country_of_origin.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+          <div class="field-group">
+            <label for="{{ form.consignment_link.id_for_label }}">{{ form.consignment_link.label }}</label>
+            {{ form.consignment_link }}
+            {% if form.consignment_link.errors %}<ul class="field-errors">{% for e in form.consignment_link.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+        </div>
+
+        <div class="field-row cols-2" style="margin-bottom:1.25rem;">
+          <div class="field-group">
+            <label for="{{ form.gross_weight.id_for_label }}">{{ form.gross_weight.label }}</label>
+            {{ form.gross_weight }}
+            {% if form.gross_weight.errors %}<ul class="field-errors">{% for e in form.gross_weight.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+          <div class="field-group">
+            <label for="{{ form.net_weight.id_for_label }}">{{ form.net_weight.label }}</label>
+            {{ form.net_weight }}
+            {% if form.net_weight.errors %}<ul class="field-errors">{% for e in form.net_weight.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+        </div>
+
+        <!-- Regulatory & Scientifics -->
+        <div class="field-row cols-2" style="margin-bottom:1.25rem;">
+          <div class="field-group">
+            <label for="{{ form.target_of_fumigation.id_for_label }}">{{ form.target_of_fumigation.label }}</label>
+            {{ form.target_of_fumigation }}
+            {% if form.target_of_fumigation.errors %}<ul class="field-errors">{% for e in form.target_of_fumigation.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+          <div class="field-group">
+            <label for="{{ form.enclosure_type.id_for_label }}">{{ form.enclosure_type.label }}</label>
+            {{ form.enclosure_type }}
+            {% if form.enclosure_type.errors %}<ul class="field-errors">{% for e in form.enclosure_type.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+        </div>
+
+        <div class="field-row cols-2" style="margin-bottom:1.25rem;">
+          <div class="field-group">
+            <label for="{{ form.datetime_commenced.id_for_label }}">{{ form.datetime_commenced.label }}</label>
+            {{ form.datetime_commenced }}
+            {% if form.datetime_commenced.errors %}<ul class="field-errors">{% for e in form.datetime_commenced.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+          <div class="field-group">
+            <label for="{{ form.datetime_completed.id_for_label }}">{{ form.datetime_completed.label }}</label>
+            {{ form.datetime_completed }}
+            {% if form.datetime_completed.errors %}<ul class="field-errors">{% for e in form.datetime_completed.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+        </div>
+
+        <div class="field-row cols-2" style="margin-bottom:1.25rem;">
+          <div class="field-group">
+            <label for="{{ form.dosage.id_for_label }}">{{ form.dosage.label }}</label>
+            {{ form.dosage }}
+            {% if form.dosage.errors %}<ul class="field-errors">{% for e in form.dosage.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+          <div class="field-group">
+            <label for="{{ form.method_application.id_for_label }}">{{ form.method_application.label }}</label>
+            {{ form.method_application }}
+            {% if form.method_application.errors %}<ul class="field-errors">{% for e in form.method_application.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+        </div>
+
+        <div class="field-row cols-2" style="margin-bottom:1.25rem;">
+          <div class="field-group">
+            <label for="{{ form.stack_size.id_for_label }}">{{ form.stack_size.label }}</label>
+            {{ form.stack_size }}
+            {% if form.stack_size.errors %}<ul class="field-errors">{% for e in form.stack_size.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+          <div class="field-group">
+            <label for="{{ form.final_tlv_reading.id_for_label }}">{{ form.final_tlv_reading.label }}</label>
+            {{ form.final_tlv_reading }}
+            {% if form.final_tlv_reading.errors %}<ul class="field-errors">{% for e in form.final_tlv_reading.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+        </div>
+
+        <div class="field-row cols-3" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem; margin-bottom:1.25rem;">
+          <div class="field-group">
+            <label for="{{ form.issue_date.id_for_label }}">{{ form.issue_date.label }}</label>
+            {{ form.issue_date }}
+            {% if form.issue_date.errors %}<ul class="field-errors">{% for e in form.issue_date.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+          <div class="field-group">
+            <label for="{{ form.fumigation_date.id_for_label }}">{{ form.fumigation_date.label }}</label>
+            {{ form.fumigation_date }}
+            {% if form.fumigation_date.errors %}<ul class="field-errors">{% for e in form.fumigation_date.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+          <div class="field-group">
+            <label for="{{ form.expiry_date.id_for_label }}">{{ form.expiry_date.label }}</label>
+            {{ form.expiry_date }}
+            {% if form.expiry_date.errors %}<ul class="field-errors">{% for e in form.expiry_date.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+        </div>
+
+
+
+        <div class="field-row cols-2" style="margin-bottom:1.25rem;">
+          <div class="field-group">
+            <label for="{{ form.gross_weight_unit.id_for_label }}">{{ form.gross_weight_unit.label }}</label>
+            {{ form.gross_weight_unit }}
+            {% if form.gross_weight_unit.errors %}<ul class="field-errors">{% for e in form.gross_weight_unit.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+          <div class="field-group">
+            <label for="{{ form.net_weight_unit.id_for_label }}">{{ form.net_weight_unit.label }}</label>
+            {{ form.net_weight_unit }}
+            {% if form.net_weight_unit.errors %}<ul class="field-errors">{% for e in form.net_weight_unit.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+        </div>
+
+        <div class="field-row cols-1" style="margin-bottom:1.25rem;">
+          <div class="field-group">
+            <label for="{{ form.commodity_description.id_for_label }}">{{ form.commodity_description.label }}</label>
+            {{ form.commodity_description }}
+            {% if form.commodity_description.errors %}<ul class="field-errors">{% for e in form.commodity_description.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+        </div>
+
+        <!-- Checkboxes Grid for Targets -->
+        <label style="font-size: 0.78rem; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.05em; display:block; margin-bottom: 0.5rem;">Target of Fumigation</label>
+        <div class="row mb-3 align-items-center">
+          <div class="col-md-2">
+             <div class="form-check">
+               {{ form.target_commodity }}
+               <label class="form-check-label fw-bold" style="font-size: 0.85rem;" for="{{ form.target_commodity.id_for_label }}">Commodity</label>
+             </div>
+          </div>
+          <div class="col-md-2">
+             <div class="form-check">
+               {{ form.target_container }}
+               <label class="form-check-label fw-bold" style="font-size: 0.85rem;" for="{{ form.target_container.id_for_label }}">Container</label>
+             </div>
+          </div>
+          <div class="col-md-2">
+             <div class="form-check">
+               {{ form.target_packing }}
+               <label class="form-check-label fw-bold" style="font-size: 0.85rem;" for="{{ form.target_packing.id_for_label }}">Packing</label>
+             </div>
+          </div>
+          <div class="col-md-6">
+             <div class="field-group" style="flex-direction: row; align-items: center; gap: 10px;">
+               <label for="{{ form.target_other.id_for_label }}" style="margin: 0; min-width: 50px;">{{ form.target_other.label }}</label>
+               {{ form.target_other }}
+             </div>
+          </div>
+        </div>
+
+        <!-- Prescribed Treatment -->
+        <label style="font-size: 0.78rem; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.05em; display:block; margin-bottom: 0.5rem; margin-top: 1rem;">Prescribed Treatment Details</label>
+        <div class="field-row" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem; margin-bottom:1.25rem;">
+          <div class="field-group">
+            <label for="{{ form.prescribed_dose.id_for_label }}">{{ form.prescribed_dose.label }}</label>
+            {{ form.prescribed_dose }}
+          </div>
+          <div class="field-group">
+            <label for="{{ form.prescribed_exposure.id_for_label }}">{{ form.prescribed_exposure.label }}</label>
+            {{ form.prescribed_exposure }}
+          </div>
+          <div class="field-group">
+            <label for="{{ form.prescribed_temp.id_for_label }}">{{ form.prescribed_temp.label }}</label>
+            {{ form.prescribed_temp }}
+          </div>
+        </div>
+
+        <!-- Applied Treatment -->
+        <label style="font-size: 0.78rem; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.05em; display:block; margin-bottom: 0.5rem;">Applied Treatment Details</label>
+        <div class="field-row" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem; margin-bottom:1.25rem;">
+          <div class="field-group">
+            <label for="{{ form.applied_dose.id_for_label }}">{{ form.applied_dose.label }}</label>
+            {{ form.applied_dose }}
+          </div>
+          <div class="field-group">
+            <label for="{{ form.applied_exposure.id_for_label }}">{{ form.applied_exposure.label }}</label>
+            {{ form.applied_exposure }}
+          </div>
+          <div class="field-group">
+            <label for="{{ form.applied_temp.id_for_label }}">{{ form.applied_temp.label }}</label>
+            {{ form.applied_temp }}
+          </div>
+        </div>
+
+        <!-- Place of Fumigation -->
+        <div class="field-row cols-2" style="margin-bottom:1.25rem;">
+          <div class="field-group">
+            <label for="{{ form.place_of_fumigation_general.id_for_label }}">{{ form.place_of_fumigation_general.label }}</label>
+            {{ form.place_of_fumigation_general }}
+          </div>
+          <div class="field-group">
+            <label for="{{ form.fumigation_street.id_for_label }}">{{ form.fumigation_street.label }}</label>
+            {{ form.fumigation_street }}
+          </div>
+        </div>
+        <div class="field-row" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem; margin-bottom:1.25rem;">
+          <div class="field-group">
+            <label for="{{ form.fumigation_city.id_for_label }}">{{ form.fumigation_city.label }}</label>
+            {{ form.fumigation_city }}
+          </div>
+          <div class="field-group">
+            <label for="{{ form.fumigation_country.id_for_label }}">{{ form.fumigation_country.label }}</label>
+            {{ form.fumigation_country }}
+          </div>
+          <div class="field-group">
+            <label for="{{ form.fumigation_postcode.id_for_label }}">{{ form.fumigation_postcode.label }}</label>
+            {{ form.fumigation_postcode }}
+          </div>
+        </div>
+
+        <!-- Declaration & Signatures -->
+        <label style="font-size: 0.78rem; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.05em; display:block; margin-bottom: 0.5rem; margin-top: 1rem;">Declaration &amp; Operator Details</label>
+        <div class="field-row cols-2" style="margin-bottom:1.25rem;">
+          <div class="field-group">
+            <label for="{{ form.operator_name.id_for_label }}">{{ form.operator_name.label }}</label>
+            {{ form.operator_name }}
+          </div>
+          <div class="field-group">
+            <label for="{{ form.certificate_sign_date.id_for_label }}">{{ form.certificate_sign_date.label }}</label>
+            {{ form.certificate_sign_date }}
+          </div>
+        </div>
+        
+        <div class="field-row cols-1" style="margin-bottom:1.25rem;">
+          <div class="field-group">
+            <label for="{{ form.additional_declaration.id_for_label }}">{{ form.additional_declaration.label }}</label>
+            {{ form.additional_declaration }}
+          </div>
+        </div>
+
+        <!-- ── Section: Status & Dates ── -->
+        <div class="form-section-label">Status &amp; Dates</div>
+
+        <div class="field-row cols-1" style="margin-bottom:1.25rem;">
+          <!-- Status -->
+          <div class="field-group">
+            <label for="{{ form.status.id_for_label }}">
+              <i class="ti ti-activity me-1"></i>{{ form.status.label }}
+            </label>
+            {{ form.status }}
+            {% if form.status.errors %}
+              <ul class="field-errors">
+                {% for e in form.status.errors %}<li>{{ e }}</li>{% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="field-row cols-1" style="margin-bottom:1.25rem;">
+          <!-- Execution Date -->
+          <div class="field-group">
+            <label for="{{ form.execution_date.id_for_label }}">
+              <i class="ti ti-calendar-check me-1"></i>{{ form.execution_date.label }}
+            </label>
+            {{ form.execution_date }}
+            <span class="field-hint">
+              The actual date the job was (or will be) performed. Admins may backdate this freely for retroactive data entry.
+            </span>
+            {% if form.execution_date.errors %}
+              <ul class="field-errors">
+                {% for e in form.execution_date.errors %}<li>{{ e }}</li>{% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- ── Section: Notes (optional) ── -->
+        <div class="form-section-label">Notes <span style="font-weight:400; text-transform:none; letter-spacing:0; color:#cbd5e1; font-size:0.7rem;">&nbsp;optional</span></div>
+
+        <div class="field-row cols-2">
+          <div class="field-group">
+            <label for="{{ form.notes.id_for_label }}">
+              <i class="ti ti-notes me-1"></i>{{ form.notes.label }}
+            </label>
+            {{ form.notes }}
+            {% if form.notes.errors %}
+              <ul class="field-errors">
+                {% for e in form.notes.errors %}<li>{{ e }}</li>{% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+          
+          <div class="field-group">
+            <label for="{{ form.remarks.id_for_label }}">
+              <i class="ti ti-message me-1"></i>{{ form.remarks.label }}
+            </label>
+            {{ form.remarks }}
+            {% if form.remarks.errors %}
+              <ul class="field-errors">
+                {% for e in form.remarks.errors %}<li>{{ e }}</li>{% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+        </div>
+
+      </form>
+    </div>
+    <!-- /Card Body -->
+
+    <!-- Card Footer (action buttons) -->
+    <div class="form-card-footer">
+      <a href="{% url cancel_url %}" class="btn-cancel">
+        <i class="ti ti-x"></i> Cancel
+      </a>
+      <button type="submit" form="job-form" class="btn-submit" id="submit-btn">
+        {% if is_edit %}
+          <i class="ti ti-device-floppy"></i>
+        {% else %}
+          <i class="ti ti-circle-plus"></i>
+        {% endif %}
+        {{ submit_label }}
+      </button>
+    </div>
+
+  </div><!-- /form-card -->
+</div>
+
+<!-- Quick Assign Button (Sticky) -->
+{% if not form.instance.pk %}
+<button type="submit" form="job-form" id="quick-assign-btn" class="btn btn-primary shadow-lg px-4 py-3 fw-bold text-white" style="position: fixed; top: 50%; right: 0; transform: translateY(-50%); z-index: 1000; border-radius: 8px 0 0 8px; font-size: 1.05rem; opacity: 0; pointer-events: none; transition: opacity 0.3s ease-in-out;">
+  Quick Assign
+</button>
+{% endif %}
+
+<!-- Quick Edit Modal -->
+<div class="modal fade" id="quickEditModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
+      <div class="modal-header" style="border-bottom: 1px solid #f1f5f9; background: #fafbff; border-radius: 16px 16px 0 0;">
+        <h5 class="modal-title fw-bold text-dark" id="quickEditModalTitle">Quick Edit</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <form id="quickEditForm">
+          <input type="hidden" id="qe_entity_type" name="entity_type">
+          <input type="hidden" id="qe_id" name="id">
+          
+          <div class="mb-3 field-group">
+            <label class="form-label" style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase;">Name</label>
+            <input type="text" class="form-control" id="qe_name" name="name" required>
+          </div>
+          <div class="mb-3 field-group">
+            <label class="form-label" style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase;">Contact Person</label>
+            <input type="text" class="form-control" id="qe_contact_person" name="contact_person">
+          </div>
+          <div class="mb-3 field-group">
+            <label class="form-label" style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase;">Mobile Number</label>
+            <input type="text" class="form-control" id="qe_mobile_number" name="mobile_number">
+          </div>
+          <div class="mb-3 field-group">
+            <label class="form-label" style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase;">Address</label>
+            <textarea class="form-control" id="qe_address" name="address" rows="2"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer" style="border-top: 1px solid #f1f5f9;">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="quickEditSaveBtn">Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Create Client Modal -->
+<div class="modal fade" id="createClientModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
+      <div class="modal-header" style="border-bottom: 1px solid #f1f5f9; background: #fafbff; border-radius: 16px 16px 0 0;">
+        <h5 class="modal-title fw-bold text-dark">Add New Client</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <form id="createClientForm">
+          <div class="mb-3 field-group">
+            <label class="form-label" style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase;">Name</label>
+            <input type="text" class="form-control" id="cc_name" name="name" required>
+          </div>
+          <div class="mb-3 field-group">
+            <label class="form-label" style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase;">Address</label>
+            <textarea class="form-control" id="cc_address" name="address" rows="2"></textarea>
+          </div>
+          <div class="mb-3 field-group">
+            <label class="form-label" style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase;">City</label>
+            <input type="text" class="form-control" id="cc_city" name="city">
+          </div>
+          <div class="mb-3 field-group">
+            <label class="form-label" style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase;">Country</label>
+            <input type="text" class="form-control" id="cc_country" name="country">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer" style="border-top: 1px solid #f1f5f9;">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="createClientSaveBtn">Save Client</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<!-- Select2 & SweetAlert2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  // Initialize Select2 for assigned_workers
+  $(document).ready(function() {
+      $('#id_assigned_workers').select2({
+          placeholder: "Select workers...",
+          allowClear: true,
+          width: '100%'
+      });
+  });
+
+  // ── Submit loading state & SweetAlert2 ─────────────────────────────────────
+  document.getElementById('job-form').addEventListener('submit', function (e) {
+    e.preventDefault(); // Stop default submission
+
+    const form = this;
+    const btn = document.getElementById('submit-btn');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Saving…';
+    }
+
+    // Show SweetAlert Animation
+    const isEdit = {% if is_edit %}true{% else %}false{% endif %};
+    Swal.fire({
+      title: isEdit ? 'Job Saved!' : 'Job Created!',
+      text: isEdit ? 'Changes saved successfully.' : 'Job created and assigned successfully.',
+      icon: 'success',
+      timer: 1500,
+      showConfirmButton: false
+    }).then(() => {
+      // Actually submit the form after the animation completes
+      form.submit();
+    });
+  });
+
+  // ── Quick Edit Logic ──────────────────────────────────────────────────────
+  let quickEditModal;
+  
+  document.addEventListener('DOMContentLoaded', function() {
+    quickEditModal = new bootstrap.Modal(document.getElementById('quickEditModal'));
+    
+    document.getElementById('quickEditSaveBtn').addEventListener('click', saveQuickEdit);
+
+    // ── Conditional UI Logic ──────────────────────────────────────────────────
+    const isThirdPartyCheckbox = document.getElementById('{{ form.is_third_party_vendor.id_for_label }}');
+    const siteGroup = document.getElementById('third-party-site-group');
+    const addressGroup = document.getElementById('third-party-address-group');
+
+    if (isThirdPartyCheckbox && siteGroup && addressGroup) {
+      function toggleThirdPartyFields() {
+        if (isThirdPartyCheckbox.checked) {
+          siteGroup.style.display = 'block';
+          addressGroup.style.display = 'block';
+        } else {
+          siteGroup.style.display = 'none';
+          addressGroup.style.display = 'none';
+        }
+      }
+
+      isThirdPartyCheckbox.addEventListener('change', toggleThirdPartyFields);
+      toggleThirdPartyFields(); // run on load
+    }
+
+    // ── Quick Assign Logic ────────────────────────────────────────────────────
+    const assignedToEl = document.getElementById('id_assigned_workers');
+    const branchEl = document.getElementById('id_branch');
+    const warehouseEl = document.getElementById('id_stock_warehouse');
+    const quickAssignBtn = document.getElementById('quick-assign-btn');
+
+    function checkQuickAssign() {
+      if (quickAssignBtn && assignedToEl && branchEl && warehouseEl) {
+        if (assignedToEl.value && branchEl.value.trim() !== '' && warehouseEl.value) {
+          quickAssignBtn.style.opacity = '1';
+          quickAssignBtn.style.pointerEvents = 'auto';
+          quickAssignBtn.style.transform = 'translateY(-50%) translateX(0)';
+        } else {
+          quickAssignBtn.style.opacity = '0';
+          quickAssignBtn.style.pointerEvents = 'none';
+          quickAssignBtn.style.transform = 'translateY(-50%) translateX(20px)';
+        }
+      }
+    }
+
+    if (assignedToEl) assignedToEl.addEventListener('change', checkQuickAssign);
+    if (branchEl) branchEl.addEventListener('input', checkQuickAssign);
+    if (warehouseEl) warehouseEl.addEventListener('change', checkQuickAssign);
+    
+    checkQuickAssign();
+  });
+
+  function openQuickEditModal(entityType, action) {
+    const selectEl = document.getElementById(`id_${entityType}`);
+    const modalTitle = document.getElementById('quickEditModalTitle');
+    
+    document.getElementById('qe_entity_type').value = entityType;
+    document.getElementById('quickEditForm').reset();
+    
+    const EntityLabel = entityType === 'cha' ? 'CHA' : 'Exporter';
+
+    if (action === 'add') {
+      document.getElementById('qe_id').value = '';
+      modalTitle.innerText = `Add New ${EntityLabel}`;
+      quickEditModal.show();
+    } else if (action === 'edit') {
+      const selectedId = selectEl.value;
+      if (!selectedId) {
+        alert(`Please select a ${EntityLabel} to edit first.`);
+        return;
+      }
+      
+      document.getElementById('qe_id').value = selectedId;
+      modalTitle.innerText = `Edit ${EntityLabel}`;
+      
+      // Fetch details
+      fetch(`/office/api/${entityType}/${selectedId}/`)
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('qe_name').value = data.name || '';
+          document.getElementById('qe_contact_person').value = data.contact_person || '';
+          document.getElementById('qe_mobile_number').value = data.mobile_number || '';
+          document.getElementById('qe_address').value = data.address || '';
+          quickEditModal.show();
+        })
+        .catch(err => {
+          alert('Error fetching details.');
+          console.error(err);
+        });
+    }
+  }
+
+  function saveQuickEdit() {
+    const entityType = document.getElementById('qe_entity_type').value;
+    const data = {
+      id: document.getElementById('qe_id').value,
+      name: document.getElementById('qe_name').value,
+      contact_person: document.getElementById('qe_contact_person').value,
+      mobile_number: document.getElementById('qe_mobile_number').value,
+      address: document.getElementById('qe_address').value,
+    };
+
+    if (!data.name) {
+      alert("Name is required.");
+      return;
+    }
+
+    // CSRF Token logic
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    const btn = document.getElementById('quickEditSaveBtn');
+    const originalText = btn.innerText;
+    btn.disabled = true;
+    btn.innerText = 'Saving...';
+
+    fetch(`/office/api/${entityType}/save/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken
+      },
+      body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(res => {
+      btn.disabled = false;
+      btn.innerText = originalText;
+      if (res.success) {
+        const selectEl = document.getElementById(`id_${entityType}`);
+        
+        if (!data.id) {
+          // Add new option and select it
+          const newOption = new Option(res.name, res.id, true, true);
+          selectEl.add(newOption);
+        } else {
+          // Update existing option
+          const option = selectEl.querySelector(`option[value="${res.id}"]`);
+          if (option) option.text = res.name;
+        }
+        
+        quickEditModal.hide();
+      } else {
+        alert("Failed to save: " + JSON.stringify(res.errors));
+      }
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btn.innerText = originalText;
+      alert("Network error saving details.");
+      console.error(err);
+    });
+  }
+
+  // ── Create Client Logic ───────────────────────────────────────────────────
+  document.getElementById('createClientSaveBtn').addEventListener('click', function() {
+    const name = document.getElementById('cc_name').value.trim();
+    if (!name) {
+      alert("Please provide a client name.");
+      return;
+    }
+    
+    const data = {
+      name: name,
+      address: document.getElementById('cc_address').value,
+      city: document.getElementById('cc_city').value,
+      country: document.getElementById('cc_country').value
+    };
+
+    const btn = document.getElementById('createClientSaveBtn');
+    btn.disabled = true;
+    btn.innerText = "Saving...";
+
+    fetch("{% url 'api_create_client' %}", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+      },
+      body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+      btn.disabled = false;
+      btn.innerText = "Save Client";
+
+      if (result.success) {
+        // Hide Modal
+        const modalEl = document.getElementById('createClientModal');
+        const modalObj = bootstrap.Modal.getInstance(modalEl);
+        modalObj.hide();
+
+        // Clear Form
+        document.getElementById('createClientForm').reset();
+
+        // Append Option
+        const selectEl = document.getElementById('id_client');
+        const newOption = new Option(result.name, result.id, true, true);
+        selectEl.add(newOption);
+        
+        // Success feedback
+        alert(`Client "${result.name}" added successfully!`);
+      } else {
+        alert("Error creating client: " + JSON.stringify(result.errors));
+      }
+    })
+    .catch(error => {
+      btn.disabled = false;
+      btn.innerText = "Save Client";
+      alert("Network error.");
+      console.error(error);
+    });
+  });
+
+  // ── Copy / Paste Engine (Foolproof) ──────────────────────────
+  document.addEventListener('DOMContentLoaded', function() {
+    
+    const copyBtn = document.getElementById('btn-copy-data');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', function() {
+        try {
+          const form = document.querySelector('form');
+          if (!form) {
+            console.error("CRITICAL ERROR: No form found on the page.");
+            alert('Form not found!');
+            return;
+          }
+
+          const EXCLUDED_FIELDS = [
+            'csrfmiddlewaretoken', 'id', 'certificate_number', 'status',
+            'datetime_commenced', 'datetime_completed', 'assigned_workers', 'assigned_to',
+            'execution_date', 'scheduled_date'
+          ];
+
+          const data = {};
+          const fields = form.querySelectorAll('input[name], select[name], textarea[name]');
+          
+          fields.forEach(element => {
+            try {
+              if (EXCLUDED_FIELDS.includes(element.name)) return;
+              if (['submit', 'button', 'reset', 'image'].includes(element.type)) return;
+
+              if (element.type === 'checkbox') {
+                data[element.name] = element.checked;
+              } else if (element.type === 'radio') {
+                if (element.checked) data[element.name] = element.value;
+              } else {
+                data[element.name] = element.value;
+              }
+            } catch (fieldError) {
+              console.warn(`[Copy] Skipped field "${element.name}":`, fieldError.message);
+            }
+          });
+
+          localStorage.setItem('copiedJob', JSON.stringify(data));
+          console.log("Data copied!");
+
+          const originalHTML = copyBtn.innerHTML;
+          copyBtn.innerHTML = '✅ Copied!';
+          copyBtn.disabled = true;
+          
+          setTimeout(() => {
+            copyBtn.innerHTML = originalHTML;
+            copyBtn.disabled = false;
+          }, 2000);
+        } catch (error) {
+          console.error("CRITICAL ERROR: ", error);
+          alert('Error copying data: ' + error.message);
+        }
+      });
+    }
+
+    const pasteBtn = document.getElementById('btn-paste-data');
+    if (pasteBtn) {
+      pasteBtn.addEventListener('click', function() {
+        try {
+          const form = document.querySelector('form');
+          if (!form) {
+            console.error("CRITICAL ERROR: No form found on the page.");
+            alert('Form not found!');
+            return;
+          }
+
+          const raw = localStorage.getItem('copiedJob');
+          if (!raw) {
+            alert('No data to paste! Please click "Copy Data" from another job first.');
+            return;
+          }
+
+          let data = {};
+          try {
+            data = JSON.parse(raw);
+          } catch (parseError) {
+            console.error("CRITICAL ERROR: JSON parse error", parseError);
+            alert('Corrupted data in memory. Please copy again.');
+            return;
+          }
+
+          if (Object.keys(data).length === 0) {
+            alert('No data to paste!');
+            return;
+          }
+
+          const EXCLUDED_FIELDS = [
+            'csrfmiddlewaretoken', 'id', 'certificate_number', 'status',
+            'datetime_commenced', 'datetime_completed', 'assigned_workers', 'assigned_to',
+            'execution_date', 'scheduled_date'
+          ];
+
+          let appliedCount = 0;
+          let skippedCount = 0;
+
+          Object.keys(data).forEach(fieldName => {
+            try {
+              if (EXCLUDED_FIELDS.includes(fieldName)) {
+                skippedCount++;
+                return;
+              }
+
+              const value = data[fieldName];
+              const element = form.querySelector(`[name="${fieldName}"]`);
+              if (!element) {
+                skippedCount++;
+                return;
+              }
+
+              if (element.type === 'checkbox') {
+                element.checked = (value === true || value === 'true' || value === 'on' || value === '1');
+                appliedCount++;
+              } else if (element.type === 'radio') {
+                const allRadios = form.querySelectorAll(`[name="${fieldName}"][type="radio"]`);
+                allRadios.forEach(radio => {
+                  radio.checked = (radio.value === String(value));
+                });
+                appliedCount++;
+              } else if (element.tagName === 'SELECT') {
+                element.value = value;
+                if (window.$ && $(element).hasClass('select2-hidden-accessible')) {
+                  $(element).val(value).trigger('change');
+                } else {
+                  element.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+                appliedCount++;
+              } else {
+                element.value = value || '';
+                element.dispatchEvent(new Event('change', { bubbles: true }));
+                element.dispatchEvent(new Event('input', { bubbles: true }));
+                appliedCount++;
+              }
+            } catch (fieldError) {
+              console.warn(`[Paste] Failed to apply field "${fieldName}":`, fieldError.message);
+              skippedCount++;
+            }
+          });
+
+          if (typeof Swal !== 'undefined') {
+            Swal.fire({
+              title: 'Data Pasted',
+              text: `Successfully pasted ${appliedCount} fields.`,
+              icon: 'success',
+              timer: 1500,
+              showConfirmButton: false
+            });
+          } else {
+            alert(`Successfully pasted ${appliedCount} fields.`);
+          }
+        } catch (error) {
+          console.error("CRITICAL ERROR: ", error);
+          alert('Error pasting data: ' + error.message);
+        }
+      });
+    }
+
+  });
+</script>
+{% endblock %}
+

@@ -1,0 +1,303 @@
+{% extends 'office/office_base.html' %}
+{% block title %}All Jobs — Pest Control OS{% endblock %}
+
+{% block content %}
+
+<!-- Header row -->
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h2 class="fw-bold mb-1" style="font-size:1.1rem; color:#1a1f2e;">Job Registry</h2>
+    <p class="text-muted mb-0" style="font-size:0.82rem;">Filter, search, and manage all field operations</p>
+  </div>
+  <a href="{% url 'office_job_create' %}" class="btn btn-primary rounded-0 d-flex align-items-center gap-2" style="background-color: #0d6efd; border-color: #0d6efd;">
+    <i class="ti ti-plus"></i> Assign New Job
+  </a>
+</div>
+
+<div class="d-flex gap-2 mb-4 flex-wrap">
+  <a href="{% url 'office_job_list' %}"
+     class="btn px-4 py-2 rounded-pill fs-6 {% if not status_filter %}btn-dark{% else %}btn-outline-secondary{% endif %}">
+    All
+  </a>
+  <a href="?status=pending"
+     class="btn px-4 py-2 rounded-pill fs-6 {% if status_filter == 'pending' %}btn-warning text-dark{% else %}btn-outline-warning{% endif %}">
+    Pending
+  </a>
+  <a href="?status=completed"
+     class="btn px-4 py-2 rounded-pill fs-6 {% if status_filter == 'completed' %}btn-success{% else %}btn-outline-success{% endif %}">
+    Completed
+  </a>
+</div>
+
+<!-- Advanced Filtering -->
+<div class="card mb-4 shadow-sm border-0">
+  <div class="card-body">
+    <form method="get" class="row g-3 align-items-end">
+      {% if status_filter %}
+        <input type="hidden" name="status" value="{{ status_filter }}">
+      {% endif %}
+      <div class="col-md-3">
+        <label class="form-label text-muted fs-6 mb-1">From Date</label>
+        <input type="date" name="from_date" class="form-control" value="{{ from_date }}">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label text-muted fs-6 mb-1">To Date</label>
+        <input type="date" name="to_date" class="form-control" value="{{ to_date }}">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label text-muted fs-6 mb-1">Cert/Cont No.</label>
+        <input type="text" name="cert_no" class="form-control" placeholder="Search..." value="{{ cert_no }}">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label text-muted fs-6 mb-1">Invoice No. / Consignment</label>
+        <input type="text" name="invoice_search" class="form-control" placeholder="INV NO..." value="{{ invoice_search }}">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label text-muted fs-6 mb-1">Assigned Worker</label>
+        <select name="worker" class="form-select">
+          <option value="">All Workers</option>
+          {% for w in workers %}
+            <option value="{{ w.id }}" {% if worker_id|add:"0" == w.id %}selected{% endif %}>{{ w.get_full_name|default:w.username }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label text-muted fs-6 mb-1">Exporter</label>
+        <input type="text" name="exporter" class="form-control" placeholder="Search Exporter..." value="{{ exporter }}">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label text-muted fs-6 mb-1">Buyer</label>
+        <input type="text" name="buyer" class="form-control" placeholder="Search Buyer..." value="{{ buyer }}">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label text-muted fs-6 mb-1">CHA</label>
+        <input type="text" name="cha" class="form-control" placeholder="Search CHA..." value="{{ cha }}">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label text-muted fs-6 mb-1">Destination Country</label>
+        <input type="text" name="country" class="form-control" placeholder="Country..." value="{{ country }}">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label text-muted fs-6 mb-1">Accreditation No.</label>
+        <input type="text" name="accreditation" class="form-control" placeholder="Accreditation..." value="{{ accreditation }}">
+      </div>
+      <div class="col-md-1 d-flex gap-2 align-items-end">
+        <button type="submit" class="btn btn-primary w-100">Filter</button>
+        <a href="{% url 'office_job_list' %}{% if status_filter %}?status={{ status_filter }}{% endif %}" class="btn btn-outline-secondary" title="Clear all filters">
+          <i class="ti ti-x"></i>
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Jobs table -->
+<div class="card table-card">
+  <div class="table-responsive">
+    <table class="table table-hover table-vcenter mb-0">
+      <thead>
+        <tr>
+          <th>Certificate No.</th>
+          <th>Assigned To</th>
+          <th>Executed Date</th>
+          <th>Status</th>
+          <th style="text-align:right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for job in jobs %}
+        <tr>
+          <td>
+            <span class="fw-semibold" style="color:#1a1f2e;">{{ job.certificate_number|default:job.container_number }}</span>
+          </td>
+          <td>
+            <div class="d-flex align-items-center gap-1">
+              {% with workers=job.assigned_workers.all %}
+                {% if workers %}
+                  <span class="badge bg-light text-dark border">{{ workers.0.get_full_name|default:workers.0.username }}</span>
+                  {% if workers|length > 1 %}
+                    <span class="badge bg-secondary" title="{% for w in workers %}{{ w.get_full_name|default:w.username }}{% if not forloop.last %}, {% endif %}{% endfor %}">+{{ workers|length|add:"-1" }}</span>
+                  {% endif %}
+                {% elif job.assigned_to %}
+                  <span class="badge bg-light text-dark border">{{ job.assigned_to.get_full_name|default:job.assigned_to.username }}</span>
+                {% else %}
+                  <span class="text-muted" style="font-size:0.85rem;">Unassigned</span>
+                {% endif %}
+              {% endwith %}
+            </div>
+          </td>
+          <td style="font-size:0.87rem;">
+            {% if job.datetime_completed %}
+              {{ job.datetime_completed|date:"N j, Y, g:i a" }}
+            {% elif job.execution_date %}
+              {{ job.execution_date|date:"N j, Y" }}
+            {% else %}
+              -
+            {% endif %}
+          </td>
+          <td>
+            {% if job.status == 'pending' %}
+              <span class="status-badge" style="background:#fff3cd; color:#92400e;">&#9203; Pending</span>
+            {% else %}
+              <span class="status-badge" style="background:#dcfce7; color:#166534;">&#9989; Completed</span>
+            {% endif %}
+          </td>
+          <td style="text-align:right;">
+            {% with job_images=job.images.all %}
+            {% if job_images or job.completion_image %}
+            <button type="button" class="btn btn-sm btn-outline-success d-inline-flex align-items-center gap-1 me-1"
+                    style="font-size:0.78rem; border-radius:8px; padding:0.3rem 0.7rem;"
+                    data-bs-toggle="modal" data-bs-target="#proofModal{{ job.pk }}">
+              🖼️ View Proof
+            </button>
+            
+            <!-- Proof Modal with Carousel -->
+            <div class="modal fade text-start" id="proofModal{{ job.pk }}" tabindex="-1" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content" style="border-radius: 16px; border: none;">
+                  <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">Proof of Completion</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body text-center p-4">
+                    {% if job_images %}
+                    <!-- Multi-image carousel -->
+                    <div id="proofCarousel{{ job.pk }}" class="carousel slide carousel-dark" data-bs-ride="carousel">
+                      <div class="carousel-inner">
+                        {% for img in job_images %}
+                        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                          <img src="{{ img.image.url }}" alt="Proof {{ forloop.counter }}" class="img-fluid rounded shadow-sm" style="height: 400px; width: 100%; object-fit: contain; background-color: #f8f9fa;">
+                          <div class="mt-2 text-muted" style="font-size: 0.8rem;">Image {{ forloop.counter }} of {{ job_images|length }}</div>
+                        </div>
+                        {% endfor %}
+                      </div>
+                      {% if job_images|length > 1 %}
+                      <button class="carousel-control-prev" type="button" data-bs-target="#proofCarousel{{ job.pk }}" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                      </button>
+                      <button class="carousel-control-next" type="button" data-bs-target="#proofCarousel{{ job.pk }}" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                      </button>
+                      {% endif %}
+                    </div>
+                    {% elif job.completion_image %}
+                    <!-- Legacy single image fallback -->
+                    <img src="{{ job.completion_image.url }}" alt="Proof" class="img-fluid rounded shadow-sm">
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            {% if job.status == 'completed' %}
+            <a href="{% url 'generate_certificate_pdf' job.pk %}"
+               class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1 me-1"
+               style="font-size:0.78rem; border-radius:8px; padding:0.3rem 0.7rem;"
+               title="Download PDF Certificate">
+              <i class="ti ti-download" style="font-size:0.9rem;"></i> PDF
+            </a>
+            {% endif %}
+            <a href="{% url 'office_job_edit' job.pk %}"
+               class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1"
+               style="font-size:0.78rem; border-radius:8px; padding:0.3rem 0.7rem;">
+              <i class="ti ti-edit" style="font-size:0.9rem;"></i> Edit
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="8" class="text-center text-muted py-5">
+            <i class="ti ti-mood-empty" style="font-size:2.5rem; display:block; margin-bottom:0.5rem; opacity:0.3;"></i>
+            No job found.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  // Restore focus based on sessionStorage
+  const activeInputName = sessionStorage.getItem('lastFocusedInput');
+  if (activeInputName) {
+    const input = document.querySelector(`input[name="${activeInputName}"]`);
+    if (input && input.value.length > 0) {
+      input.focus();
+      const len = input.value.length;
+      if (input.setSelectionRange) {
+        input.setSelectionRange(len, len);
+      }
+    }
+    sessionStorage.removeItem('lastFocusedInput');
+  }
+
+  // Live filter logic
+  const filterForm = document.querySelector('form');
+  if (filterForm) {
+    let debounceTimer;
+    
+    // For text inputs
+    const textInputs = filterForm.querySelectorAll('input[type="text"]');
+    textInputs.forEach(input => {
+      input.addEventListener('input', function() {
+        sessionStorage.setItem('lastFocusedInput', input.name);
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => { filterForm.submit(); }, 500);
+      });
+    });
+
+    // For date and select inputs
+    const changeInputs = filterForm.querySelectorAll('input[type="date"], select');
+    changeInputs.forEach(input => {
+      input.addEventListener('change', function() {
+        sessionStorage.setItem('lastFocusedInput', input.name);
+        filterForm.submit();
+      });
+    });
+  }
+});
+
+function copyJobData(jobId, btnEl) {
+  fetch(`/job/${jobId}/json/`)
+    .then(response => response.json())
+    .then(data => {
+      localStorage.setItem('copiedJob', JSON.stringify(data));
+      
+      if (btnEl) {
+        const origHTML = btnEl.innerHTML;
+        btnEl.innerHTML = '✅ Copied!';
+        setTimeout(() => { btnEl.innerHTML = origHTML; }, 2000);
+      }
+      
+      // Show silent success toast
+      const toastEl = document.createElement('div');
+      toastEl.className = 'toast align-items-center text-white bg-success border-0 position-fixed bottom-0 end-0 m-3';
+      toastEl.setAttribute('role', 'alert');
+      toastEl.setAttribute('aria-live', 'assertive');
+      toastEl.setAttribute('aria-atomic', 'true');
+      toastEl.style.zIndex = '1055';
+      toastEl.innerHTML = `
+        <div class="d-flex">
+          <div class="toast-body">
+            <i class="ti ti-check me-2"></i>Job data copied to clipboard!
+          </div>
+        </div>
+      `;
+      document.body.appendChild(toastEl);
+      const toast = new bootstrap.Toast(toastEl, { delay: 2000 });
+      toast.show();
+      setTimeout(() => toastEl.remove(), 2500);
+    })
+    .catch(error => console.error('Error copying job:', error));
+}
+</script>
+{% endblock %}

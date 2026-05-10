@@ -1,0 +1,56 @@
+{% extends "office/office_base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8 col-lg-6">
+    <div class="card form-card">
+      <div class="form-card-header">
+        <div>
+          <h1>{{ form_title }}</h1>
+          <p>{{ form_subtitle }}</p>
+        </div>
+      </div>
+
+      <div class="card-body p-4">
+        <form method="post" action="{% url 'office_add_stock' %}">
+          {% csrf_token %}
+          
+          <div class="mb-3 field-group">
+            <label class="form-label fw-bold">Item <span class="text-danger">*</span></label>
+            <select name="item" class="form-select" required>
+              <option value="">-- Select Item --</option>
+              {% for item in items %}
+              <option value="{{ item.id }}">{{ item.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3 field-group">
+            <label class="form-label fw-bold">Location <span class="text-danger">*</span></label>
+            <select name="location" class="form-select" required>
+              <option value="">-- Select Location --</option>
+              {% for loc in locations %}
+              <option value="{{ loc.id }}">{{ loc.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-4 field-group">
+            <label class="form-label fw-bold">Amount to Add <span class="text-danger">*</span></label>
+            <input type="number" name="amount" class="form-control" min="1" step="1" required placeholder="e.g. 5">
+          </div>
+
+          <div class="form-card-footer mt-4 pt-3 border-top" style="display:flex; justify-content:flex-end; gap:0.5rem; margin:-1.5rem -1.5rem -1.5rem; padding:1rem 1.5rem; background:#f8fafc; border-radius:0 0 16px 16px;">
+            <a href="{% url cancel_url %}" class="btn-cancel" style="text-decoration:none; padding:0.5rem 1rem; color:#64748b; font-weight:600; border-radius:8px;">
+              Cancel
+            </a>
+            <button type="submit" class="btn btn-primary" style="padding:0.5rem 1.25rem; font-weight:600; border-radius:8px;">
+              {{ submit_label }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,99 @@
+{% extends 'office/office_base.html' %}
+
+{% block title %}{{ page_title }} — Pest Control OS{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    {% if breadcrumb_parent_url %}
+    <a href="{% url breadcrumb_parent_url %}" class="text-muted text-decoration-none mb-2 d-inline-block" style="font-size:0.85rem; font-weight:600;">
+      <i class="ti ti-arrow-left me-1"></i>Back to {{ breadcrumb_parent_label|default:"List" }}
+    </a>
+    {% endif %}
+    <h2 class="fw-bold mb-1" style="font-size:1.4rem; color:#0f172a;">{{ form_title }}</h2>
+    <p class="text-muted mb-0" style="font-size:0.9rem;">{{ form_subtitle }}</p>
+  </div>
+</div>
+
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  
+  <div class="row g-4">
+    <!-- Main Item Details -->
+    <div class="col-lg-8">
+      <div class="card shadow-sm border-0" style="border-radius: 12px;">
+        <div class="card-header bg-white py-3 border-0">
+          <h3 class="card-title fw-bold m-0" style="color: #1e293b;"><i class="ti ti-flask text-primary me-2"></i>Item Details</h3>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold text-secondary">{{ form.name.label }}</label>
+              {{ form.name }}
+              {% if form.name.errors %}
+                <div class="invalid-feedback d-block">{{ form.name.errors.0 }}</div>
+              {% endif %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold text-secondary">{{ form.unit_of_measurement.label }}</label>
+              {{ form.unit_of_measurement }}
+              {% if form.unit_of_measurement.errors %}
+                <div class="invalid-feedback d-block">{{ form.unit_of_measurement.errors.0 }}</div>
+              {% endif %}
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold text-secondary">{{ form.description.label }}</label>
+              {{ form.description }}
+              {% if form.description.errors %}
+                <div class="invalid-feedback d-block">{{ form.description.errors.0 }}</div>
+              {% endif %}
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold text-secondary">{{ form.image.label }}</label>
+              {{ form.image }}
+              {% if form.image.errors %}
+                <div class="invalid-feedback d-block">{{ form.image.errors.0 }}</div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Multi-Warehouse Initial Stock -->
+    <div class="col-lg-4">
+      <div class="card shadow-sm border-0" style="border-radius: 12px; background-color: #f8fafc;">
+        <div class="card-header border-0 pb-0" style="background-color: transparent;">
+          <h3 class="card-title fw-bold m-0" style="color: #0f172a;"><i class="ti ti-building-warehouse text-amber me-2"></i>Initial Stock at Locations</h3>
+          <p class="text-muted mt-1 mb-0" style="font-size: 0.8rem;">Distribute this item across available branches.</p>
+        </div>
+        <div class="card-body">
+          {% for field in form %}
+            {% if "stock_location_" in field.name %}
+            <div class="mb-3 d-flex align-items-center bg-white p-2 rounded shadow-sm border">
+              <div class="flex-grow-1 ps-2 fw-semibold text-dark" style="font-size: 0.9rem;">
+                {{ field.label }}
+              </div>
+              <div style="width: 100px;">
+                {{ field }}
+              </div>
+              {% if field.errors %}
+                <div class="invalid-feedback d-block">{{ field.errors.0 }}</div>
+              {% endif %}
+            </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+      
+      <!-- Action Buttons -->
+      <div class="mt-4 text-end">
+        <a href="{% url cancel_url %}" class="btn btn-outline-secondary rounded-pill px-4 fw-bold shadow-sm me-2">Cancel</a>
+        <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">{{ submit_label }}</button>
+      </div>
+    </div>
+  </div>
+</form>
+
+{% endblock %}

@@ -1,0 +1,346 @@
+{% extends 'office/office_base.html' %}
+{% block title %}Manage Stock Levels — Pest Control{% endblock %}
+
+{% block extra_head %}
+<style>
+  /* ── Location Cards ─────────────────────────────────────── */
+  .loc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .loc-card {
+    background: #ffffff;
+    border-radius: 18px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    border: 1px solid #edf2f7;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+  }
+  .loc-card:hover {
+    box-shadow: 0 10px 32px rgba(0,0,0,0.09);
+    transform: translateY(-2px);
+  }
+
+  /* Card Header */
+  .loc-card-header {
+    background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+    padding: 1.1rem 1.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+  .loc-card-header .loc-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 11px;
+    background: rgba(255,255,255,0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .loc-card-header .loc-name {
+    font-size: 1rem;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.3px;
+    flex: 1;
+  }
+  .loc-card-header .loc-total-badge {
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 0.3em 0.85em;
+    border-radius: 99px;
+    white-space: nowrap;
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255,255,255,0.25);
+  }
+
+  /* Item rows */
+  .loc-item-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1.2rem;
+    border-bottom: 1px solid #f1f5f9;
+    transition: background 0.12s;
+  }
+  .loc-item-row:last-child { border-bottom: none; }
+  .loc-item-row:hover { background: #fafbff; }
+
+  .item-icon-sm {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: #ede9fe;
+    color: #6d28d9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+
+  .item-meta { flex: 1; min-width: 0; }
+  .item-meta .name {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .item-meta .unit {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    font-weight: 500;
+  }
+
+  /* Qty badge */
+  .qty-badge {
+    font-size: 0.82rem;
+    font-weight: 800;
+    padding: 0.3em 0.75em;
+    border-radius: 8px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .qty-ok   { background: #dcfce7; color: #166534; }
+  .qty-low  { background: #fef9c3; color: #92400e; }
+  .qty-zero { background: #fee2e2; color: #b91c1c; }
+
+  /* Add stock input */
+  .add-stock-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .add-plus {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #16a34a;
+    line-height: 1;
+  }
+  .add-input {
+    width: 72px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.3rem 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #1e293b;
+    text-align: center;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    outline: none;
+  }
+  .add-input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+  }
+  .add-input::placeholder { color: #cbd5e1; font-weight: 400; }
+
+  /* Empty state inside card */
+  .loc-empty {
+    padding: 2rem 1.4rem;
+    text-align: center;
+    color: #94a3b8;
+    font-size: 0.82rem;
+    font-weight: 500;
+  }
+  .loc-empty i { font-size: 1.8rem; display: block; margin-bottom: 0.4rem; opacity: 0.3; }
+
+  /* Apply button */
+  .apply-bar {
+    position: sticky;
+    bottom: 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+    padding: 0;
+    pointer-events: none;
+    z-index: 100;
+  }
+  .apply-btn {
+    pointer-events: all;
+    background: linear-gradient(135deg, #16a34a, #22c55e);
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 0.85rem 2rem;
+    font-size: 1rem;
+    font-weight: 800;
+    box-shadow: 0 8px 24px rgba(22,163,74,0.4);
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s, opacity 0.2s;
+    opacity: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .apply-btn.visible {
+    opacity: 1;
+    animation: pop-in 0.2s ease;
+  }
+  @keyframes pop-in {
+    from { transform: scale(0.85) translateY(6px); }
+    to   { transform: scale(1) translateY(0); }
+  }
+  .apply-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(22,163,74,0.45); }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── Page header ──────────────────────────────────────────────────────── -->
+<div class="d-flex align-items-start justify-content-between mb-4 flex-wrap gap-3">
+  <div>
+    <a href="{% url 'office_inventory' %}" class="text-muted text-decoration-none mb-2 d-inline-flex align-items-center gap-1" style="font-size:0.85rem; font-weight:600;">
+      <i class="ti ti-arrow-left"></i> Back to Inventory
+    </a>
+    <h1 class="fw-bold mb-1" style="font-size:1.6rem; color:#0f172a; letter-spacing:-0.5px;">Manage Stock Levels</h1>
+    <p class="text-muted mb-0" style="font-size:0.88rem;">
+      Fill the <span class="fw-bold text-success">+</span> boxes for any item and click <em>Apply</em> to safely increment stock.
+    </p>
+  </div>
+  <a href="{% url 'office_stock_create' %}" class="btn btn-primary d-flex align-items-center gap-2 rounded-3 fw-bold shadow-sm d-none">
+    <i class="ti ti-plus"></i> New Stock Entry
+  </a>
+</div>
+
+
+<!-- ── Inline Add-Stock Form ─────────────────────────────────────────────── -->
+<form method="post" action="{% url 'office_stock_list' %}" id="stock-form">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="add_stock">
+
+  {% if location_groups %}
+
+  <div class="loc-grid">
+    {% for group in location_groups %}
+    <div class="loc-card">
+
+      <!-- Location header -->
+      <div class="loc-card-header">
+        <div class="loc-icon"><i class="ti ti-building-warehouse"></i></div>
+        <div class="loc-name">{{ group.location.name }}</div>
+        <span class="loc-total-badge">
+          {{ group.total|floatformat:"0" }} units total
+        </span>
+      </div>
+
+      <!-- Items inside this location -->
+      {% if group.stocks %}
+        {% for stock in group.stocks %}
+        <div class="loc-item-row">
+
+          <!-- Item icon + name -->
+          <div class="item-icon-sm">
+            {% if stock.item.image %}
+              <img src="{{ stock.item.image.url }}" alt="" style="width:100%; height:100%; object-fit:cover; border-radius:9px;">
+            {% else %}
+              <i class="ti ti-flask"></i>
+            {% endif %}
+          </div>
+
+          <div class="item-meta">
+            <div class="name">{{ stock.item.name }}</div>
+            {% if stock.item.unit_of_measurement %}
+              <div class="unit">{{ stock.item.unit_of_measurement }}</div>
+            {% endif %}
+          </div>
+
+          <!-- Current qty -->
+          <span class="qty-badge {% if stock.quantity == 0 %}qty-zero{% elif stock.quantity <= 5 %}qty-low{% else %}qty-ok{% endif %}">
+            {{ stock.quantity|floatformat:"0" }}
+          </span>
+
+          <!-- + input -->
+          <div class="add-stock-wrap">
+            <span class="add-plus">+</span>
+            <input
+              type="number"
+              name="add_stock_to_{{ stock.pk }}"
+              class="add-input stock-add-field"
+              placeholder="0"
+              min="0"
+              step="any"
+              autocomplete="off"
+            >
+          </div>
+
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="loc-empty">
+          <i class="ti ti-package-off"></i>
+          No items tracked at this location yet.<br>
+          <a href="{% url 'office_stock_create' %}?location={{ group.location.pk }}" class="text-primary fw-semibold">Add one →</a>
+        </div>
+      {% endif %}
+
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Sticky Apply button -->
+  <div class="apply-bar mt-4">
+    <button type="submit" class="apply-btn" id="apply-btn">
+      <i class="ti ti-device-floppy"></i>
+      Apply Stock Additions
+    </button>
+  </div>
+
+  {% else %}
+  <!-- No locations configured -->
+  <div class="card table-card text-center py-5">
+    <i class="ti ti-building-warehouse" style="font-size:3rem; color:#cbd5e1; display:block; margin-bottom:1rem;"></i>
+    <p class="fw-bold text-dark mb-1">No warehouse locations configured.</p>
+    <p class="text-muted mb-3" style="font-size:0.88rem;">Create a location first, then add stock entries.</p>
+    <a href="{% url 'office_location_create' %}" class="btn btn-primary mx-auto">Add First Location</a>
+  </div>
+  {% endif %}
+
+</form>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const applyBtn = document.getElementById('apply-btn');
+  const fields   = document.querySelectorAll('.stock-add-field');
+
+  function checkAnyFilled() {
+    const anyFilled = Array.from(fields).some(function (f) {
+      const v = parseFloat(f.value);
+      return !isNaN(v) && v > 0;
+    });
+    if (anyFilled) {
+      applyBtn.classList.add('visible');
+    } else {
+      applyBtn.classList.remove('visible');
+    }
+  }
+
+  fields.forEach(function (f) {
+    f.addEventListener('input', checkAnyFilled);
+    // Highlight the row when focused
+    f.addEventListener('focus', function () {
+      this.closest('.loc-item-row').style.background = '#f0fdf4';
+    });
+    f.addEventListener('blur', function () {
+      this.closest('.loc-item-row').style.background = '';
+    });
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Certificate {{ job.container_number }}</title>
+    <style>
+        @page {
+            size: a4 portrait;
+            margin: 30pt 30pt;
+        }
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 10pt;
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+
+    <div style="border: 2px solid #000; padding: 10px;">
+        
+        <!-- Header Section -->
+        <table width="100%" border="0" cellpadding="5" cellspacing="0">
+            <tr>
+                <td width="15%" align="left" valign="middle">
+                    <img src="file:///{{ logo_path }}" style="width: 80px; height: auto;" alt="Logo">
+                </td>
+                <td width="85%" align="left" valign="middle">
+                    <h1 style="margin: 0; padding: 0; font-size: 20pt;">ECOMAX PEST MANAGMENT</h1>
+                    <p style="margin: 2px 0 0 0; font-size: 8pt;">Approved by "Directorate of Plant Protection Quarantine &amp; Storage"<br>Ministry of Agriculture, India.</p>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" align="center" style="padding-top: 10px; font-size: 12pt; font-weight: bold;">
+                    METHYL BROMIDE FUMIGATION CERTIFICATE
+                </td>
+            </tr>
+        </table>
+
+        <!-- Certificate Info -->
+        <table width="100%" border="0" cellpadding="5" cellspacing="0" style="margin-top: 10px;">
+            <tr>
+                <td width="50%"><strong>CERTIFICATE NO:</strong> {{ job.certificate_name|default:"-" }}</td>
+                <td width="50%"><strong>DATE OF ISSUE:</strong> {{ job.issue_date|date:"d-M-Y"|default:"-" }}</td>
+            </tr>
+        </table>
+
+        <!-- CONSIGNMENT DETAIL -->
+        <table width="100%" border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; margin-top: 10px;">
+            <tr>
+                <td colspan="4" style="background-color: #e0e0e0; font-weight: bold; text-align: center;">CONSIGNMENT DETAIL</td>
+            </tr>
+            <tr>
+                <td width="25%"><strong>EXPORTER</strong></td>
+                <td width="25%">{{ job.exporter.name|default:"-" }}</td>
+                <td width="25%"><strong>CONSIGNEE</strong></td>
+                <td width="25%">{{ job.client.name|default:"-" }}</td>
+            </tr>
+            <tr>
+                <td><strong>CONSIGNMENT LINK</strong></td>
+                <td>{{ job.consignment_link|default:"-" }}</td>
+                <td><strong>VESSEL / VOYAGE</strong></td>
+                <td>{{ job.vessel_voyage|default:"-" }}</td>
+            </tr>
+            <tr>
+                <td><strong>PORT OF LOADING</strong></td>
+                <td>{{ job.port_of_loading|default:"-" }}</td>
+                <td><strong>DESTINATION COUNTRY</strong></td>
+                <td>{{ job.destination_country|default:"-" }}</td>
+            </tr>
+            <tr>
+                <td><strong>COMMODITY COUNTRY OF ORIGIN</strong></td>
+                <td>{{ job.commodity_country_of_origin|default:"-" }}</td>
+                <td><strong>CONTAINER NUMBER(S)</strong></td>
+                <td>{{ job.container_number|default:"-" }}</td>
+            </tr>
+            <tr>
+                <td><strong>CARGO DESCRIPTION</strong></td>
+                <td colspan="3">{{ job.cargo_description|default:"-" }}</td>
+            </tr>
+            <tr>
+                <td><strong>QUANTITY &amp; PACKAGES</strong></td>
+                <td>{{ job.quantity_pkgs|default:"-" }}</td>
+                <td><strong>GROSS WEIGHT</strong></td>
+                <td>{{ job.gross_weight|default:"-" }}</td>
+            </tr>
+            <tr>
+                <td><strong>NET WEIGHT</strong></td>
+                <td colspan="3">{{ job.net_weight|default:"-" }}</td>
+            </tr>
+        </table>
+
+        <!-- TARGET OF FUMIGATION -->
+        <table width="100%" border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; margin-top: 10px;">
+            <tr>
+                <td colspan="4" style="background-color: #e0e0e0; font-weight: bold; text-align: center;">TARGET OF FUMIGATION</td>
+            </tr>
+            <tr>
+                <td width="25%">{% if job.target_of_fumigation == 'Commodity' %}[ X ]{% else %}[ &nbsp; ]{% endif %} Commodity</td>
+                <td width="25%">{% if job.target_of_fumigation == 'Container' %}[ X ]{% else %}[ &nbsp; ]{% endif %} Container</td>
+                <td width="25%">{% if job.target_of_fumigation == 'Packing' %}[ X ]{% else %}[ &nbsp; ]{% endif %} Packing</td>
+                <td width="25%">{% if job.target_of_fumigation == 'Other' %}[ X ]{% else %}[ &nbsp; ]{% endif %} Other</td>
+            </tr>
+        </table>
+
+        <!-- ENCLOSURE TYPE -->
+        <table width="100%" border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; margin-top: 10px;">
+            <tr>
+                <td colspan="4" style="background-color: #e0e0e0; font-weight: bold; text-align: center;">ENCLOSURE TYPE</td>
+            </tr>
+            <tr>
+                <td width="25%">{% if job.enclosure_type == 'Sheeted Enclosure' %}[ X ]{% else %}[ &nbsp; ]{% endif %} Sheeted Enclosure</td>
+                <td width="25%">{% if job.enclosure_type == 'Fumigation Chamber' %}[ X ]{% else %}[ &nbsp; ]{% endif %} Fumigation Chamber</td>
+                <td width="25%">{% if job.enclosure_type == 'Un-sheeted Container' %}[ X ]{% else %}[ &nbsp; ]{% endif %} Un-sheeted Container</td>
+                <td width="25%">{% if job.enclosure_type == 'Other' %}[ X ]{% else %}[ &nbsp; ]{% endif %} Other</td>
+            </tr>
+        </table>
+
+        <!-- TREATMENT SCHEDULE -->
+        <table width="100%" border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; margin-top: 10px;">
+            <tr>
+                <td colspan="4" style="background-color: #e0e0e0; font-weight: bold; text-align: center;">TREATMENT SCHEDULE</td>
+            </tr>
+            <tr>
+                <td width="25%"><strong>DATE/TIME COMMENCED</strong></td>
+                <td width="25%">{{ job.datetime_commenced|date:"d-M-Y H:i"|default:"-" }}</td>
+                <td width="25%"><strong>DATE/TIME COMPLETED</strong></td>
+                <td width="25%">{{ job.datetime_completed|date:"d-M-Y H:i"|default:"-" }}</td>
+            </tr>
+            <tr>
+                <td><strong>CHEMICAL USED</strong></td>
+                <td>
+                    {% for log in usage_logs %}
+                        {{ log.item.name }}{% if not forloop.last %}, {% endif %}
+                    {% empty %}
+                        -
+                    {% endfor %}
+                </td>
+                <td><strong>DOSAGE</strong></td>
+                <td>{{ job.dosage|default:"-" }}</td>
+            </tr>
+            <tr>
+                <td><strong>METHOD OF APPLICATION</strong></td>
+                <td>{{ job.method_application|default:"-" }}</td>
+                <td><strong>STACK SIZE</strong></td>
+                <td>{{ job.stack_size|default:"-" }}</td>
+            </tr>
+            <tr>
+                <td><strong>FINAL TLV READING</strong></td>
+                <td colspan="3">{{ job.final_tlv_reading|default:"-" }}</td>
+            </tr>
+        </table>
+
+        <!-- DECLARATION -->
+        <table width="100%" border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; margin-top: 10px;">
+            <tr>
+                <td style="background-color: #e0e0e0; font-weight: bold; text-align: center;">DECLARATION</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px;">
+                    <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                        <tr>
+                            <td width="60%" valign="top" style="font-size: 8pt;">
+                                I, THE FUMIGATOR-IN-CHARGE DECLARE :<br>
+                                1. THE FUMIGATION WAS CONDUCTED IN ACCORDANCE WITH IMPORT CONDITIONS.<br>
+                                2. THE INFORMATION PROVIDED IS TRUE AND CORRECT.
+                            </td>
+                            <td width="40%" align="center" valign="bottom">
+                                <div style="border-bottom: 1px solid #000; width: 80%; height: 40px; margin: 0 auto 5px auto;"></div>
+                                <strong>SIGNATURE (AUTHORIZED AGENT)</strong><br>
+                                {{ job.assigned_to.get_full_name|default:job.assigned_to.username|upper }}
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+
+        <!-- Footer -->
+        <div style="margin-top: 15px; font-size: 8pt; border-top: 1px solid #000; padding-top: 5px; text-align: center;">
+            <strong>Mundra Address :</strong> M-14, Golden Arcade, Zero Point, Mundra, Kutchh Gujarat-382424.<br>
+            <strong>Bhachau Address :</strong> Shop No. 35, Vishal Shopping Center, Navchetan Andhjan Mandal, Bhachau, Kutchh, Gujarat-370140<br>
+            <strong>Contact :</strong> 9714774488, <strong>Email:</strong> docs@ecomax.co.in
+        </div>
+
+    </div>
+
+</body>
+</html>

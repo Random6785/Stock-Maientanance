@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}{{ page_title }} — Pest Control{% endblock %}</title>
+
+  <!-- Tabler CSS (CDN) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/css/tabler.min.css" />
+  <!-- Tabler Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.1.0/dist/tabler-icons.min.css" />
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── Global Reset ───────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f7f8fc;
+      color: #1e293b;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Brand Header Bar ───────────────────────────────────────── */
+    .site-header {
+      background: #ffffff;
+      border-bottom: 1px solid #e8ecf0;
+      padding: 0 2rem;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 1050;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .site-header .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #206bc4, #4299e1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(32,107,196,0.3);
+    }
+    .brand-name {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.4px;
+      line-height: 1.1;
+    }
+    .brand-name span {
+      display: block;
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: #94a3b8;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* ── Header Right Controls ───────────────────────────────────── */
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .btn-db-admin {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #64748b;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 0.35rem 0.85rem;
+      background: transparent;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .btn-db-admin:hover {
+      border-color: #206bc4;
+      color: #206bc4;
+      background: rgba(32,107,196,0.04);
+    }
+    /* User Avatar Dropdown */
+    .user-dropdown-toggle {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: #1e293b;
+      padding: 6px 8px;
+      border-radius: 10px;
+      transition: background 0.15s;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+    }
+    .user-dropdown-toggle:hover {
+      background: #f1f5f9;
+    }
+    .user-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, #206bc4, #4299e1);
+      color: white;
+      font-weight: 700;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(32,107,196,0.25);
+    }
+    .user-meta { line-height: 1.2; }
+    .user-meta .name {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #1e293b;
+    }
+    .user-meta .role {
+      font-size: 0.7rem;
+      color: #94a3b8;
+      font-weight: 500;
+    }
+    .dropdown-menu {
+      border-radius: 12px !important;
+      border: 1px solid rgba(0,0,0,0.06) !important;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.1) !important;
+      padding: 6px !important;
+      min-width: 200px !important;
+      margin-top: 8px !important;
+    }
+    .dropdown-item {
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      padding: 0.6rem 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: background 0.12s;
+    }
+    .dropdown-item:hover { background: #f1f5f9; }
+    .dropdown-item.text-danger:hover { background: #fef2f2; }
+    .dropdown-divider { margin: 4px 0 !important; border-color: #f1f5f9 !important; }
+
+    /* ── Horizontal Main Navigation ──────────────────────────────── */
+    .main-nav {
+      background: #ffffff;
+      border-bottom: 1px solid #e8ecf0;
+      padding: 0 2rem;
+      position: sticky;
+      top: 64px;
+      z-index: 1040;
+    }
+    .main-nav .nav-list {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .main-nav .nav-list .nav-item { display: flex; }
+    .main-nav .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 0.85rem 1.1rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #64748b;
+      text-decoration: none;
+      border-bottom: 2.5px solid transparent;
+      border-radius: 0;
+      transition: color 0.15s, border-color 0.15s, background 0.15s;
+      white-space: nowrap;
+      position: relative;
+    }
+    .main-nav .nav-link .nav-icon {
+      font-size: 1.15rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.15s;
+    }
+    .main-nav .nav-link:hover {
+      color: #206bc4;
+      background: rgba(32,107,196,0.04);
+    }
+    .main-nav .nav-link:hover .nav-icon {
+      transform: translateY(-1px);
+    }
+    .main-nav .nav-link.active {
+      color: #206bc4;
+      border-bottom-color: #206bc4;
+      background: rgba(32,107,196,0.05);
+    }
+    .main-nav .nav-link.active .nav-icon {
+      color: #206bc4;
+    }
+
+    /* Click ripple effect */
+    .main-nav .nav-link.nav-loading {
+      color: #206bc4;
+      pointer-events: none;
+    }
+    .main-nav .nav-link.nav-loading .nav-text {
+      opacity: 0.7;
+    }
+
+    /* CSS Spinner (replaces icon on click) */
+    @keyframes nav-spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .nav-spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(32,107,196,0.25);
+      border-top-color: #206bc4;
+      border-radius: 50%;
+      animation: nav-spin 0.6s linear infinite;
+      flex-shrink: 0;
+    }
+
+    /* Badge */
+    .nav-badge {
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 0.2em 0.55em;
+      border-radius: 99px;
+      line-height: 1;
+    }
+
+    /* ── Page Wrapper ───────────────────────────────────────────── */
+    .page-wrapper {
+      background: #f7f8fc;
+      min-height: calc(100vh - 113px);
+    }
+    .page-body {
+      padding: 2rem 2.5rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* ── Stat Cards ─────────────────────────────────────────────── */
+    .stat-card {
+      border: none;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .stat-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.09);
+    }
+    .stat-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+    }
+
+    /* ── Tables ─────────────────────────────────────────────────── */
+    .table-card {
+      border: none;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+      overflow: hidden;
+    }
+    .table > thead > tr > th {
+      background: #f8fafc;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #94a3b8;
+      border-bottom: 1px solid #e8ecf0;
+      padding: 1rem 1.4rem;
+    }
+    .table > tbody > tr > td {
+      padding: 1rem 1.4rem;
+      vertical-align: middle;
+      font-size: 0.9rem;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .table > tbody > tr:last-child > td { border-bottom: none; }
+
+    /* ── Badges ─────────────────────────────────────────────────── */
+    .status-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.35em 0.75em;
+      border-radius: 99px;
+    }
+
+    /* ── Alerts ─────────────────────────────────────────────────── */
+    .alert { border-radius: 12px; font-size: 0.88rem; font-weight: 500; }
+
+    /* ── Footer ─────────────────────────────────────────────────── */
+    .site-footer {
+      display: none;
+    }
+  </style>
+
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+  <!-- ═══════════════════ BRAND HEADER ═══════════════════════════ -->
+  <header class="site-header">
+
+    <!-- Brand -->
+    <a href="{% url 'office_dashboard' %}" class="brand">
+      <div class="brand-icon">
+        <i class="ti ti-building-factory-2"></i>
+      </div>
+      <div class="brand-name">
+        Pest Control
+        <span>Office Portal</span>
+      </div>
+    </a>
+
+    <!-- Right side controls -->
+    <div class="header-actions">
+
+      <!-- DB Admin button (superusers only) -->
+      {% if request.user.is_superuser %}
+      <a href="{% url 'admin:index' %}" target="_blank" class="btn-db-admin">
+        <i class="ti ti-database"></i> DB Admin
+      </a>
+      {% endif %}
+
+      <!-- User Profile Dropdown (single, canonical) -->
+      <div class="dropdown">
+        <button class="user-dropdown-toggle dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+          <div class="user-avatar">
+            {{ request.user.first_name|first|default:request.user.username|first|upper }}
+          </div>
+          <div class="user-meta d-none d-md-block">
+            <div class="name">{{ request.user.get_full_name|default:request.user.username }}</div>
+            <div class="role">Office Administrator</div>
+          </div>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><span class="dropdown-header text-muted" style="font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; padding: 0.4rem 0.85rem 0.25rem;">Signed in as</span></li>
+          <li><span class="dropdown-item-text fw-semibold" style="font-size:0.82rem; padding: 0 0.85rem 0.5rem; color:#1e293b;">{{ request.user.get_full_name|default:request.user.username }}</span></li>
+          <li><hr class="dropdown-divider"></li>
+          <li>
+            <a href="#" class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#logoutModal">
+              <i class="ti ti-logout"></i> Logout
+            </a>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+  </header>
+  <!-- ═══════════════════ /BRAND HEADER ══════════════════════════ -->
+
+  <!-- ═══════════════════ MAIN NAV ═══════════════════════════════ -->
+  <nav class="main-nav" aria-label="Main navigation">
+    <ul class="nav-list justify-content-center mx-auto" id="main-nav-list">
+
+      <li class="nav-item">
+        <a class="nav-link {% if request.resolver_match.url_name == 'office_dashboard' %}active{% endif %}"
+           href="{% url 'office_dashboard' %}">
+          <span class="nav-icon"><i class="ti ti-layout-dashboard"></i></span>
+          <span class="nav-text">Dashboard</span>
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link {% if request.resolver_match.url_name == 'office_job_list' %}active{% endif %}"
+           href="{% url 'office_job_list' %}">
+          <span class="nav-icon"><i class="ti ti-briefcase"></i></span>
+          <span class="nav-text">All Jobs</span>
+          {% if total_pending %}
+            <span class="badge bg-danger nav-badge">{{ total_pending }}</span>
+          {% endif %}
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link {% if request.resolver_match.url_name == 'office_job_create' %}active{% endif %}"
+           href="{% url 'office_job_create' %}">
+          <span class="nav-icon"><i class="ti ti-circle-plus"></i></span>
+          <span class="nav-text">Assign Job</span>
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link {% if request.resolver_match.url_name == 'office_worker_list' %}active{% endif %}"
+           href="{% url 'office_worker_list' %}">
+          <span class="nav-icon"><i class="ti ti-users"></i></span>
+          <span class="nav-text">Field Workers</span>
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link {% if request.resolver_match.url_name == 'office_inventory' %}active{% endif %}"
+           href="{% url 'office_inventory' %}">
+          <span class="nav-icon"><i class="ti ti-flask"></i></span>
+          <span class="nav-text">Inventory</span>
+          {% if low_stock_count %}
+            <span class="badge bg-warning text-dark nav-badge">{{ low_stock_count }} low</span>
+          {% endif %}
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link {% if request.resolver_match.url_name == 'inventory_report' %}active{% endif %}"
+           href="{% url 'inventory_report' %}">
+          <span class="nav-icon"><i class="ti ti-chart-bar"></i></span>
+          <span class="nav-text">Analytics Report</span>
+        </a>
+      </li>
+
+    </ul>
+  </nav>
+  <!-- ═══════════════════ /MAIN NAV ══════════════════════════════ -->
+
+  <!-- ═══════════════════ PAGE WRAPPER ════════════════════════════ -->
+  <div class="page-wrapper">
+
+    <!-- Django messages -->
+    {% if messages %}
+    <div style="padding: 1.25rem 2.5rem 0;">
+      {% for message in messages %}
+      <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+        <i class="ti ti-info-circle me-2"></i>{{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Page content -->
+    <div class="page-body">
+      {% block content %}{% endblock %}
+    </div>
+
+  </div>
+  <!-- ═══════════════════ /PAGE WRAPPER ═══════════════════════════ -->
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    Pest Control OS &copy; 2026 &mdash; Office Portal
+  </footer>
+
+  <!-- Logout Confirmation Modal -->
+  <div class="modal modal-blur fade" id="logoutModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+      <div class="modal-content shadow-lg border-0" style="border-radius: 16px;">
+        <div class="modal-body text-center py-5">
+          <div class="mb-3">
+            <i class="ti ti-logout text-danger" style="font-size: 4rem;"></i>
+          </div>
+          <h3 class="fw-bold mb-2" style="font-size: 1.25rem; color: #0f172a;">Are you sure?</h3>
+          <div class="text-muted" style="font-size: 0.9rem;">Do you really want to log out of the Office Portal?</div>
+        </div>
+        <div class="modal-footer border-0 pt-0 pb-4 px-4 justify-content-center gap-2">
+          <button type="button" class="btn btn-light rounded-pill px-4 fw-semibold" data-bs-dismiss="modal">Cancel</button>
+          <form method="post" action="{% url 'logout' %}" class="m-0 p-0">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm">Yes, Logout</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabler JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/js/tabler.min.js"></script>
+  <!-- ApexCharts -->
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+  <!-- ── Nav Click Loading States ──────────────────────────────── -->
+  <script>
+    (function () {
+      const navLinks = document.querySelectorAll('#main-nav-list .nav-link');
+
+      navLinks.forEach(function (link) {
+        link.addEventListener('click', function (e) {
+          // Don't intercept if already active (same page) or modifier keys held
+          if (link.classList.contains('active') || e.ctrlKey || e.metaKey || e.shiftKey) return;
+
+          // Swap the icon for a spinner on all nav links, restore icon elsewhere
+          navLinks.forEach(function (other) {
+            const icon = other.querySelector('.nav-icon');
+            if (!icon) return;
+            icon.innerHTML = '<i class="' + (icon.dataset.origIcon || 'ti ti-layout-dashboard') + '"></i>';
+          });
+
+          const icon = link.querySelector('.nav-icon');
+          if (icon) {
+            // Save original icon class so we can restore on back-navigation if needed
+            const innerI = icon.querySelector('i');
+            if (innerI && !icon.dataset.origIcon) {
+              icon.dataset.origIcon = innerI.className;
+            }
+            icon.innerHTML = '<span class="nav-spinner"></span>';
+          }
+
+          link.classList.add('nav-loading');
+        });
+      });
+
+      // Restore icons if user lands back on the page via browser history
+      window.addEventListener('pageshow', function (e) {
+        navLinks.forEach(function (link) {
+          const icon = link.querySelector('.nav-icon');
+          if (icon && icon.dataset.origIcon) {
+            icon.innerHTML = '<i class="' + icon.dataset.origIcon + '"></i>';
+          }
+          link.classList.remove('nav-loading');
+        });
+      });
+    })();
+  </script>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

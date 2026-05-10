@@ -1,0 +1,122 @@
+{% extends 'office/office_base.html' %}
+{% block title %}Create Job — Pest Control OS{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+
+    <div class="mb-4">
+      <a href="{% url 'office_job_list' %}" class="text-muted text-decoration-none" style="font-size:0.85rem;">
+        <i class="ti ti-arrow-left me-1"></i>Back to All Jobs
+      </a>
+    </div>
+
+    <div class="card table-card">
+      <div class="card-header bg-white px-4 py-3">
+        <div class="d-flex align-items-center gap-3">
+          <div class="stat-icon" style="background:#dbeafe; color:#2563eb; width:40px; height:40px; font-size:1.1rem;">
+            <i class="ti ti-briefcase"></i>
+          </div>
+          <div>
+            <h3 class="card-title mb-0" style="font-size:1rem; font-weight:700;">Assign New Job</h3>
+            <p class="text-muted mb-0" style="font-size:0.78rem;">Dispatch a field worker to a shipping container</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-body px-4 pt-4 pb-2">
+        <form method="POST" novalidate>
+          {% csrf_token %}
+
+          <!-- Container Number -->
+          <div class="mb-4">
+            <label class="form-label fw-semibold" style="font-size:0.85rem;">
+              Container Number <span class="text-danger">*</span>
+            </label>
+            <div class="input-group">
+              <span class="input-group-text bg-white">
+                <i class="ti ti-container text-muted"></i>
+              </span>
+              <input type="text" name="container_number" class="form-control"
+                     placeholder="e.g. MSKU1234567"
+                     value="{{ request.POST.container_number }}" required />
+            </div>
+          </div>
+
+          <!-- Assigned To -->
+          <div class="mb-4">
+            <label class="form-label fw-semibold" style="font-size:0.85rem;">
+              Assign To (Field Worker) <span class="text-danger">*</span>
+            </label>
+            <div class="input-group">
+              <span class="input-group-text bg-white">
+                <i class="ti ti-user text-muted"></i>
+              </span>
+              <select name="assigned_to" class="form-select" required>
+                <option value="">— Select a worker —</option>
+                {% for worker in workers %}
+                <option value="{{ worker.pk }}"
+                  {% if request.POST.assigned_to == worker.pk|stringformat:"s" %}selected{% endif %}>
+                  {{ worker.get_full_name|default:worker.username }}
+                </option>
+                {% empty %}
+                <option disabled>No field workers found — add users via DB Admin</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <!-- Dates -->
+          <div class="row g-3 mb-4">
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold" style="font-size:0.85rem;">
+                Scheduled Date <span class="text-danger">*</span>
+              </label>
+              <input type="date" name="scheduled_date" class="form-control"
+                     value="{{ request.POST.scheduled_date|default:today }}" required />
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold" style="font-size:0.85rem;">
+                Execution Date
+                <span class="badge bg-azure-lt text-azure" style="font-size:0.65rem; vertical-align:middle;">Retroactive OK</span>
+              </label>
+              <input type="date" name="execution_date" class="form-control"
+                     value="{{ request.POST.execution_date|default:today }}" />
+              <div class="form-hint">Leave blank to default to today.</div>
+            </div>
+          </div>
+
+          <!-- Status -->
+          <div class="mb-4">
+            <label class="form-label fw-semibold" style="font-size:0.85rem;">Initial Status</label>
+            <select name="status" class="form-select">
+              <option value="pending"     {% if request.POST.status == 'pending'     %}selected{% endif %}>Pending</option>
+              <option value="in_progress" {% if request.POST.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+              <option value="completed"   {% if request.POST.status == 'completed'   %}selected{% endif %}>Completed</option>
+            </select>
+            <div class="form-hint">Set to "Completed" when logging a retroactive job.</div>
+          </div>
+
+          <!-- Notes -->
+          <div class="mb-4">
+            <label class="form-label fw-semibold" style="font-size:0.85rem;">Notes (optional)</label>
+            <textarea name="notes" class="form-control" rows="3"
+                      placeholder="Special instructions, retroactive entry reason, etc.">{{ request.POST.notes }}</textarea>
+          </div>
+
+          <div class="card-footer bg-white px-0 pb-4 d-flex gap-3">
+            <button type="submit" class="btn btn-primary px-4">
+              <i class="ti ti-check me-1"></i> Create & Assign Job
+            </button>
+            <a href="{% url 'office_job_list' %}" class="btn btn-ghost-secondary">Cancel</a>
+          </div>
+
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}

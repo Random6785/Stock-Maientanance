@@ -1,0 +1,449 @@
+{% extends 'office/office_base.html' %}
+{% block title %}Inventory — Pest Control OS{% endblock %}
+
+{% block extra_head %}
+<style>
+  /* ── Stat Cards ──────────────────────────────────────────────────────────── */
+  .inv-stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  @media (max-width: 1200px) {
+    .inv-stat-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .inv-stat-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .inv-stat-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 1.25rem 1.4rem;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+    border: 1px solid #f0f2f7;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .inv-stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.09);
+  }
+
+  .inv-stat-card.grand {
+    background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+    border: none;
+  }
+
+  .inv-stat-card.grand .stat-label,
+  .inv-stat-card.grand .stat-value,
+  .inv-stat-card.grand .stat-sub {
+    color: #ffffff !important;
+  }
+
+  .inv-stat-card.grand .stat-icon-wrap {
+    background: rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+  }
+
+  .stat-icon-wrap {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+    flex-shrink: 0;
+  }
+
+  .stat-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #94a3b8;
+    margin-bottom: 0.25rem;
+  }
+
+  .stat-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1;
+    margin-bottom: 0.25rem;
+  }
+
+  .stat-sub {
+    font-size: 0.75rem;
+    color: #64748b;
+    font-weight: 500;
+  }
+
+  /* ── Matrix Table ───────────────────────────────────────────────────────── */
+  .matrix-card {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+    border: 1px solid #f0f2f7;
+    overflow: hidden;
+  }
+
+  .matrix-card .card-header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #f0f2f7;
+  }
+
+  .matrix-card .card-header-bar h2 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+  }
+
+  .matrix-card .card-header-bar p {
+    font-size: 0.78rem;
+    color: #94a3b8;
+    margin: 0.15rem 0 0;
+  }
+
+  /* Table overrides */
+  .matrix-table thead tr th {
+    background: #f8fafc;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #94a3b8;
+    padding: 0.9rem 1.2rem;
+    border-bottom: 1px solid #f0f2f7;
+    white-space: nowrap;
+  }
+
+  .matrix-table thead tr th.loc-header {
+    text-align: center;
+  }
+
+  .matrix-table tbody tr td {
+    padding: 0.9rem 1.2rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #f8fafc;
+    font-size: 0.88rem;
+  }
+
+  .matrix-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .matrix-table tbody tr:hover {
+    background: #fafbff;
+  }
+
+  .item-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .item-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: #f3e8ff;
+    color: #7c3aed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+
+  .item-name {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 0.88rem;
+  }
+
+  .total-cell {
+    font-weight: 800;
+    font-size: 1rem;
+    color: #1e293b;
+    text-align: center;
+  }
+
+  .loc-cell {
+    text-align: center;
+  }
+
+  /* Stock badges */
+  .badge-qty {
+    display: inline-block;
+    padding: 0.3em 0.75em;
+    border-radius: 99px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .badge-ok {
+    background: #dcfce7;
+    color: #15803d;
+  }
+
+  .badge-low {
+    background: #fef9c3;
+    color: #92400e;
+  }
+
+  .badge-zero {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #94a3b8;
+  }
+
+  .empty-state .ti {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 1rem;
+    opacity: 0.35;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── Page header ─────────────────────────────────────────────────────────── -->
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h1 class="fw-bold mb-1" style="font-size:1.8rem; color:#0f172a; letter-spacing:-0.5px;">
+      Inventory
+    </h1>
+    <p class="text-muted mb-0" style="font-size:0.9rem;">
+      Live stock levels across all warehouse locations
+    </p>
+  </div>
+
+</div>
+
+<!-- ── Action Buttons & Total Inventory  ─────────────────────────────────────── -->
+<div class="row gap-0 mb-4 align-items-stretch">
+  <!-- Total Inventory Banner -->
+  <div class="col-lg-7 mb-3 mb-lg-0 pe-lg-2">
+    <div class="card text-white h-100 border-0 shadow-sm rounded-4 overflow-hidden position-relative"
+      style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);">
+      <div class="position-absolute end-0 bottom-0 opacity-10" style="transform: translate(15%, 25%);">
+        <i class="ti ti-database" style="font-size: 160px;"></i>
+      </div>
+      <div class="card-body p-4 d-flex flex-column justify-content-center">
+        <div class="d-flex align-items-center gap-4 mb-3">
+          <div class="d-flex align-items-center justify-content-center"
+            style="font-size: 3.5rem; flex-shrink: 0; line-height: 1;">
+            <i class="ti ti-chart-bar text-white opacity-75"></i>
+          </div>
+          <div>
+            <div class="text-uppercase fw-bold mb-1" style="font-size:1.1rem; letter-spacing:0.1em; opacity: 0.9;">Total
+              Inventory</div>
+            <div class="fw-bold mb-0" style="font-size:3.5rem; line-height: 1;">{{ grand_total }} <span
+                style="font-size: 1.2rem; font-weight: 600; opacity: 0.85;">units</span></div>
+          </div>
+        </div>
+
+        <!-- Breakdown badges -->
+        <div class="d-flex flex-wrap gap-2 mt-2" style="position: relative; z-index: 2;">
+          {% for row in matrix_rows %}
+          {% if row.total > 0 %}
+          <span class="badge"
+            style="background: rgba(255,255,255,0.15); font-size: 0.85rem; padding: 0.5em 0.8em; backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.2);">
+            <span class="fw-bold">{{ row.total }}x</span> {{ row.item.name }}
+          </span>
+          {% endif %}
+          {% empty %}
+          <span class="badge" style="background: rgba(255,255,255,0.1); font-size: 0.8rem;">No items recorded</span>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Big Action Buttons -->
+  <div class="col-lg-5 ps-lg-2 d-flex flex-column gap-3">
+    <div class="row g-3 flex-grow-1">
+      <div class="col-6 d-flex">
+        <a href="{% url 'office_item_create' %}"
+          class="btn btn-light d-flex flex-column align-items-center justify-content-center w-100 shadow-sm rounded-4 border p-3"
+          style="aspect-ratio: 1/1; transition: transform 0.2s;">
+          <i class="ti ti-flask mb-2 text-primary" style="font-size: 2.2rem;"></i>
+          <span class="fw-bold text-dark" style="font-size: 1.1rem; white-space: normal;">Add Inventory Item</span>
+        </a>
+      </div>
+      <div class="col-6 d-flex">
+        <a href="{% url 'office_location_create' %}"
+          class="btn btn-light d-flex flex-column align-items-center justify-content-center w-100 shadow-sm rounded-4 border p-3"
+          style="aspect-ratio: 1/1; transition: transform 0.2s;">
+          <i class="ti ti-building-warehouse mb-2 text-primary" style="font-size: 2.2rem;"></i>
+          <span class="fw-bold text-dark" style="font-size: 1.1rem; white-space: normal;">Add Location</span>
+        </a>
+      </div>
+    </div>
+    <div class="d-flex gap-3 flex-grow-1">
+      <a href="{% url 'office_stock_list' %}"
+        class="btn btn-light d-flex flex-column align-items-center justify-content-center flex-grow-1 shadow-sm rounded-4 border p-3 h-100"
+        style="transition: transform 0.2s;">
+        <i class="ti ti-report-analytics mb-2 text-primary" style="font-size: 1.8rem;"></i>
+        <span class="fw-bold text-dark" style="font-size: 1rem;">Add New Stock</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ── Stat Cards ─────────────────────────────────────────────────────────── -->
+<div class="inv-stat-grid">
+
+
+
+  <!-- One card per location -->
+  {% for stat in location_stats %}
+  <div class="inv-stat-card">
+    <div class="stat-icon-wrap" style="background:#eff6ff; color:#2563eb;">
+      <i class="ti ti-building-warehouse"></i>
+    </div>
+    <div class="stat-label">{{ stat.location.name }}</div>
+    <div class="stat-value"
+      style="{% if stat.total == 0 %}color:#dc2626;{% elif stat.total <= 10 %}color:#d97706;{% else %}color:#0f172a;{% endif %}">
+      {{ stat.total }}
+    </div>
+    <div class="stat-sub">
+      {% if stat.total == 0 %}
+      <span style="color:#dc2626; font-weight:700;">No stock</span>
+      {% elif stat.total <= 10 %} <span style="color:#d97706; font-weight:700;">Low stock</span>
+        {% else %}
+        units stored
+        {% endif %}
+    </div>
+  </div>
+  {% empty %}
+  <div class="inv-stat-card" style="grid-column: 2 / -1; text-align:center; color:#94a3b8;">
+    <i class="ti ti-info-circle" style="font-size:1.4rem;"></i>
+    <div class="mt-2" style="font-size:0.82rem;">No warehouse locations configured yet.</div>
+  </div>
+  {% endfor %}
+
+</div>
+
+<!-- ── Data Table ───────────────────────────────────────────────────────── -->
+<div class="matrix-card">
+  <div class="card-header-bar">
+    <div>
+      <h2>Stock Levels</h2>
+      <p class="text-muted mt-1" style="font-size: 0.85rem;">{{ matrix_rows|length }} item{{ matrix_rows|length|pluralize }} listed</p>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover matrix-table mb-0">
+      <thead>
+        <tr>
+          <th style="min-width:220px;">Item / Chemical</th>
+          <th class="loc-header" style="min-width:110px; background-color: #f1f5f9; border-left: 2px solid #e2e8f0; border-right: 2px solid #e2e8f0; color: #1e293b; font-weight: 800;">
+            <i class="ti ti-sum me-1"></i> Total Stock
+          </th>
+          {% for loc in locations %}
+          <th class="loc-header" style="min-width:130px;">
+            <i class="ti ti-building-warehouse me-1"></i>{{ loc.name }}
+          </th>
+          {% endfor %}
+          <th style="width: 80px; text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in matrix_rows %}
+        <tr>
+          <!-- Item name -->
+          <td>
+            <div class="item-cell">
+              {% if row.item.image %}
+              <img src="{{ row.item.image.url }}" alt="{{ row.item.name }}" class="rounded-3 shadow-sm"
+                style="width: 44px; height: 44px; object-fit: cover; border: 1px solid #e2e8f0; flex-shrink: 0;"
+                onerror="this.onerror=null; this.outerHTML='<div class=\'item-icon shadow-sm\'><i class=\'ti ti-flask\'></i></div>';">
+              {% else %}
+              <div class="item-icon shadow-sm"><i class="ti ti-flask"></i></div>
+              {% endif %}
+              <div class="d-flex flex-column">
+                <span class="item-name" style="font-size: 0.95rem; font-weight: 700;">{{ row.item.name }}</span>
+                {% if row.item.description %}
+                <span class="text-muted text-truncate mt-1"
+                  style="font-size: 0.75rem; max-width: 180px; font-weight: 500;">{{ row.item.description }}</span>
+                {% endif %}
+              </div>
+            </div>
+          </td>
+
+          <!-- Row total -->
+          <td class="total-cell" style="background-color: #f8fafc; border-left: 2px solid #e2e8f0; border-right: 2px solid #e2e8f0;">
+            <span
+              class="badge-qty {% if row.total == 0 %}badge-zero{% elif row.total <= 5 %}badge-low{% else %}badge-ok{% endif %}"
+              style="font-size:0.9rem; padding: 0.4em 1em; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+              {{ row.total }}
+            </span>
+          </td>
+
+          <!-- Per-location cells -->
+          {% for qty in row.cells %}
+          <td class="loc-cell">
+            {% if qty == 0 %}
+            <span class="badge-qty badge-zero">Out of Stock</span>
+            {% elif qty <= 5 %} <span class="badge-qty badge-low">{{ qty }}</span>
+              {% else %}
+              <span class="badge-qty badge-ok">{{ qty }}</span>
+              {% endif %}
+          </td>
+          {% endfor %}
+          <td style="text-align: right;">
+            <a href="{% url 'office_item_edit' row.item.id %}" class="btn btn-sm btn-outline-primary"
+              style="border-radius: 6px; font-weight: 600;">Edit Item</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="{{ locations|length|add:2 }}">
+            <div class="empty-state">
+              <i class="ti ti-mood-empty"></i>
+              <p class="fw-semibold mb-1" style="color:#1e293b;">No inventory items found.</p>
+              <p style="font-size:0.8rem;">
+                {% if request.user.is_superuser %}
+                <a href="{% url 'office_item_create' %}" class="text-primary">
+                  Add your first item →
+                </a>
+                {% else %}
+                Ask an administrator to add items.
+                {% endif %}
+              </p>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

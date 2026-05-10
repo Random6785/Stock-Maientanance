@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Inventory App</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <style>
+        /* Modern Native App Typography & Colors */
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa; /* Requested very light gray */
+            color: #212529; /* High-contrast dark text */
+            font-size: 16px;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            padding-bottom: 90px; /* Space for bottom nav */
+        }
+
+        h1, h2, h3, h4 {
+            font-weight: 700;
+            color: #121212;
+            letter-spacing: -0.02em;
+        }
+
+        main {
+            padding: 24px 16px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Edge-to-edge Premium Cards */
+        .card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01); /* Soft, diffuse shadow */
+            border: none;
+            position: relative;
+        }
+        
+        /* Ensure inputs fit without zooming out on mobile */
+        img { max-width: 100%; height: auto; }
+
+        .card-clickable {
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .card-clickable:active {
+            transform: scale(0.98);
+        }
+
+        /* Gigantic Tap Targets */
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #0d6efd; /* Modern blue */
+            color: white;
+            padding: 14px 24px; 
+            min-height: 55px; /* Massive tap target */
+            text-decoration: none;
+            border-radius: 12px;
+            border: none;
+            font-size: 18px;
+            font-weight: 700; /* Thick bold text */
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s ease;
+            width: 100%;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+        
+        .btn-success {
+            background-color: #198754;
+        }
+        .btn-success:hover, .btn-success:focus {
+            background-color: #157347;
+        }
+
+        /* Form Fields */
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #343a40;
+            font-size: 16px;
+        }
+
+        input:not([type="file"]), select, textarea, .form-control, .form-select {
+            width: 100%;
+            min-height: 55px; /* Massive tap targets */
+            padding: 12px 20px; 
+            margin-bottom: 24px;
+            border: 2px solid #dee2e6;
+            border-radius: 12px; /* Fully rounded corners */
+            box-sizing: border-box;
+            background-color: #ffffff;
+            font-family: inherit;
+            font-size: 18px; /* High legibility */
+            font-weight: 600; /* Bold text for inputs */
+            color: #212529;
+            transition: all 0.2s ease;
+            box-shadow: none;
+            appearance: none;
+        }
+
+        select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23343a40' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 16px 12px;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #0d6efd; 
+            box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.15); 
+        }
+
+        input[readonly] {
+            background-color: #e9ecef;
+            color: #6c757d;
+            cursor: not-allowed;
+            border-color: #dee2e6;
+            box-shadow: none;
+        }
+
+        /* Native App Bottom Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #ffffff;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            height: 80px; /* Tall enough for thumbs */
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08); /* Soft up-shadow */
+            border-top-left-radius: 24px;
+            border-top-right-radius: 24px;
+            z-index: 1000;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .nav-item {
+            text-decoration: none;
+            color: #adb5bd; /* Inactive color */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 8px;
+            flex: 1;
+            transition: color 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .nav-item i {
+            font-size: 26px;
+            margin-bottom: 4px;
+            transition: transform 0.2s ease;
+        }
+
+        .nav-item.active {
+            color: #0d6efd; /* Active blue */
+        }
+        
+        .nav-item.active i {
+            transform: scale(1.1);
+        }
+
+        /* Modern Toasts */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 90%;
+            max-width: 400px;
+        }
+        .toast {
+            background-color: #343a40; /* Dark premium toast */
+            color: white;
+            padding: 16px 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2);
+            font-weight: 600;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            opacity: 0;
+            transform: translateY(-20px);
+            animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards, fadeOutToast 0.4s forwards 4.5s;
+        }
+        @keyframes slideDown {
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes fadeOutToast {
+            to { transform: translateY(-20px); opacity: 0; }
+        }
+    </style>
+    {% block extra_style %}{% endblock %}
+</head>
+<body>
+    <main>
+        {% if messages %}
+            <div class="toast-container" id="toast-container">
+                {% for message in messages %}
+                    <div class="toast">
+                        <i class="bi bi-info-circle-fill text-info" style="font-size: 1.2rem;"></i>
+                        <span>{{ message }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+            <script>
+                setTimeout(() => {
+                    const container = document.getElementById('toast-container');
+                    if (container) container.remove();
+                }, 4500);
+            </script>
+        {% endif %}
+
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    {% block nav %}
+    <!-- Fixed Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+        <!-- Assuming jobs list is the main screen for field workers -->
+        <a href="{% url 'job_list' %}" class="nav-item active">
+            <i class="bi bi-briefcase-fill"></i>
+            <span>Jobs</span>
+        </a>
+        <button type="button" class="nav-item" id="history-btn" style="background: none; border: none; padding: 8px; flex: 1;">
+            <i class="bi bi-clock-history"></i>
+            <span>History</span>
+        </button>
+        <a href="#" class="nav-item" data-bs-toggle="modal" data-bs-target="#logoutModal">
+            <i class="bi bi-box-arrow-right"></i>
+            <span>Logout</span>
+        </a>
+    </nav>
+
+    <!-- Logout Confirmation Modal -->
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 400px;">
+            <div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);">
+                <div class="modal-body text-center" style="padding: 40px 24px;">
+                    <div class="mb-3">
+                        <i class="bi bi-box-arrow-right" style="font-size: 48px; color: #dc3545;"></i>
+                    </div>
+                    <h3 style="color: #212529; margin: 16px 0 8px; font-size: 20px; font-weight: 700;">Are you sure?</h3>
+                    <p style="color: #6c757d; margin: 0; font-size: 14px; font-weight: 500;">Do you really want to log out?</p>
+                </div>
+                <div style="padding: 0 24px 24px; display: flex; gap: 12px; justify-content: center;">
+                    <button type="button" class="btn" style="background-color: #e9ecef; color: #212529; flex: 1;" data-bs-dismiss="modal">Cancel</button>
+                    <form method="post" action="{% url 'logout' %}" style="flex: 1;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger" style="width: 100%; margin: 0;">Yes, Logout</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock nav %}
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Handle history button — navigate to job_list then scroll to completed section
+        document.addEventListener('DOMContentLoaded', function() {
+            const historyBtn = document.getElementById('history-btn');
+            if (historyBtn) {
+                historyBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const completedSection = document.querySelector('[data-section="completed"]');
+                    if (completedSection) {
+                        // Already on job_list — just scroll
+                        completedSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    } else {
+                        // Navigate to job_list with a hash so we scroll on arrival
+                        window.location.href = '{% url "job_list" %}#history';
+                    }
+                });
+            }
+
+            // If page loaded with #history hash, scroll to completed section
+            if (window.location.hash === '#history') {
+                const completedSection = document.querySelector('[data-section="completed"]');
+                if (completedSection) {
+                    setTimeout(() => {
+                        completedSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 300);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

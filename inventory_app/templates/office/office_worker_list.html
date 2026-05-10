@@ -1,0 +1,73 @@
+{% extends 'office/office_base.html' %}
+{% block title %}{{ page_title }} — Pest Control OS{% endblock %}
+
+{% block content %}
+<!-- Header row -->
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h2 class="fw-bold mb-1" style="font-size:1.4rem; color:#0f172a;">Field Workers</h2>
+    <p class="text-muted mb-0" style="font-size:0.9rem;">Manage field team accounts and access</p>
+  </div>
+  <a href="{% url 'office_worker_create' %}" class="btn btn-primary d-flex align-items-center gap-2 rounded-pill px-4 fw-bold shadow-sm">
+    <i class="ti ti-user-plus"></i> Add New Worker
+  </a>
+</div>
+
+<!-- Workers Table -->
+<div class="card table-card shadow-sm border-0">
+  <div class="table-responsive">
+    <table class="table table-hover table-vcenter mb-0">
+      <thead style="background: #f8fafc;">
+        <tr>
+          <th style="padding-left: 1.5rem;">Worker</th>
+          <th>Username</th>
+          <th>Date Joined</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for worker in workers %}
+        <tr>
+          <td style="padding-left: 1.5rem;">
+            <div class="d-flex align-items-center gap-3">
+              <span class="avatar avatar-md" style="background: linear-gradient(135deg, #f1f5f9, #e2e8f0); color: #475569; font-weight: 700; border-radius: 12px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                {{ worker.first_name|first|default:worker.username|first|upper }}
+              </span>
+              <div>
+                <div class="fw-bold text-dark" style="font-size: 0.95rem;">
+                  {% if worker.first_name %}{{ worker.first_name }} {{ worker.last_name }}{% else %}—{% endif %}
+                </div>
+                <div class="text-muted" style="font-size: 0.75rem;">Field Team</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <span class="fw-semibold text-secondary">@{{ worker.username }}</span>
+          </td>
+          <td>
+            <span class="text-muted" style="font-size: 0.85rem;">{{ worker.date_joined|date:"M d, Y" }}</span>
+          </td>
+          <td>
+            {% if worker.is_active %}
+            <span class="badge bg-green-lt px-2 py-1 rounded" style="font-size: 0.75rem;"><i class="ti ti-check me-1"></i>Active</span>
+            {% else %}
+            <span class="badge bg-red-lt px-2 py-1 rounded" style="font-size: 0.75rem;"><i class="ti ti-x me-1"></i>Inactive</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4" class="text-center py-5">
+            <div class="text-muted">
+              <i class="ti ti-users-off" style="font-size: 3rem; opacity: 0.4; display: block; margin-bottom: 1rem;"></i>
+              <p class="mb-1 fw-semibold text-dark">No field workers found.</p>
+              <p style="font-size: 0.85rem;">Provision your first field worker to get started.</p>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

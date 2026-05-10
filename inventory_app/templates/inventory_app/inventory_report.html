@@ -1,0 +1,106 @@
+{% extends "office/office_base.html" %}
+
+{% block content %}
+<div class="card mb-3" style="border-radius:16px; border:none; box-shadow:0 4px 20px rgba(0,0,0,0.05);">
+  <div class="card-body">
+    <form method="GET" class="row g-3 align-items-end">
+      <!-- Item Filter -->
+      <div class="col-md-3">
+        <label class="form-label fw-bold" style="font-size:0.75rem; text-transform:uppercase;">Item</label>
+        <select name="item_id" class="form-select">
+          <option value="">All Items</option>
+          {% for item in items %}
+            <option value="{{ item.id }}" {% if item.id|stringformat:"s" == item_id %}selected{% endif %}>{{ item.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Location Filter -->
+      <div class="col-md-2">
+        <label class="form-label fw-bold" style="font-size:0.75rem; text-transform:uppercase;">Location</label>
+        <select name="location_id" class="form-select">
+          <option value="">All Locations</option>
+          {% for loc in locations %}
+            <option value="{{ loc.id }}" {% if loc.id|stringformat:"s" == location_id %}selected{% endif %}>{{ loc.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Worker Filter -->
+      <div class="col-md-2">
+        <label class="form-label fw-bold" style="font-size:0.75rem; text-transform:uppercase;">Worker</label>
+        <select name="worker_id" class="form-select">
+          <option value="">All Workers</option>
+          {% for worker in workers %}
+            <option value="{{ worker.id }}" {% if worker.id|stringformat:"s" == worker_id %}selected{% endif %}>{{ worker.get_full_name|default:worker.username }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Date From -->
+      <div class="col-md-2">
+        <label class="form-label fw-bold" style="font-size:0.75rem; text-transform:uppercase;">From</label>
+        <input type="date" name="date_from" class="form-control" value="{{ date_from }}">
+      </div>
+
+      <!-- Date To -->
+      <div class="col-md-2">
+        <label class="form-label fw-bold" style="font-size:0.75rem; text-transform:uppercase;">To</label>
+        <input type="date" name="date_to" class="form-control" value="{{ date_to }}">
+      </div>
+
+      <!-- Buttons -->
+      <div class="col-md-1 d-flex gap-2">
+        <button type="submit" class="btn btn-primary w-100"><i class="ti ti-filter"></i></button>
+        <a href="{% url 'inventory_report' %}" class="btn btn-outline-secondary w-100"><i class="ti ti-x"></i></a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card table-card">
+  <div class="table-responsive">
+    <table class="table table-vcenter table-nowrap card-table table-hover">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Item Used</th>
+          <th>Amount (Used)</th>
+          <th>Warehouse</th>
+          <th>Field Worker</th>
+          <th>Certificate / Job Ref</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in logs %}
+        <tr>
+          <td>{{ log.created_at|date:"d-M-Y" }}</td>
+          <td class="fw-bold">{{ log.item.name }}</td>
+          <td>
+            <span class="badge bg-purple-lt" style="font-size:0.85rem; padding:0.4rem 0.6rem; border-radius:6px;">
+              {{ log.amount_used|floatformat:"-2" }} {{ log.item.unit_of_measurement }}
+            </span>
+          </td>
+          <td>{{ log.job.stock_warehouse.name|default:"-" }}</td>
+          <td>{{ log.job.assigned_to.get_full_name|default:"System / Unknown" }}</td>
+          <td>
+            {% if log.job.certificate_number %}
+              <span class="text-primary fw-bold">{{ log.job.certificate_number }}</span>
+            {% else %}
+              <span class="text-muted">{{ log.job.container_number }}</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-center text-muted py-5">
+            <i class="ti ti-mood-empty" style="font-size:2.5rem; display:block; margin-bottom:0.5rem; opacity:0.3;"></i>
+            No usage logs match your filters.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

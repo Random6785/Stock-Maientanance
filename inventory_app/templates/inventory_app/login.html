@@ -1,0 +1,29 @@
+{% extends 'inventory_app/base.html' %}
+
+{% block nav %}{% endblock nav %}
+
+{% block extra_style %}
+<style>body { padding-bottom: 0 !important; }</style>
+{% endblock %}
+
+{% block content %}
+<div class="card" style="margin-top: 20px;">
+    <h2>{% if is_admin %}Admin Login{% else %}Worker Login{% endif %}</h2>
+    <form method="post">
+        {% csrf_token %}
+        <label for="id_username" style="display: block; margin-bottom: 8px; font-weight: 500;">Username:</label>
+        <input type="text" name="username" autofocus autocapitalize="none" autocomplete="username" maxlength="150" required id="id_username" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 16px; box-sizing: border-box; font-size: 16px;">
+        
+        <label for="id_password" style="display: block; margin-bottom: 8px; font-weight: 500;">Password:</label>
+        <input type="password" name="password" autocomplete="current-password" required id="id_password" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 24px; box-sizing: border-box; font-size: 16px;">
+        
+        <button type="submit" class="btn" style="width: 100%;">Login</button>
+    </form>
+    
+    <div style="margin-top: 16px; text-align: center;">
+        <a href="{% url 'login_choice' %}" style="color: #0d6efd; text-decoration: none; font-size: 14px;">
+            ← Back to Login Choice
+        </a>
+    </div>
+</div>
+{% endblock %}

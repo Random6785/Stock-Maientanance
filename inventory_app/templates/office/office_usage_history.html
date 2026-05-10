@@ -1,0 +1,81 @@
+{% extends "office/office_base.html" %}
+
+{% block content %}
+<div class="card mb-3">
+  <div class="card-body">
+    <form method="get" class="row g-3 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label fw-bold" style="font-size:0.75rem; text-transform:uppercase;">Filter by Item</label>
+        <select name="item" class="form-select">
+          <option value="">All Items</option>
+          {% for item in items %}
+          <option value="{{ item.id }}" {% if item.id|stringformat:"s" == item_filter %}selected{% endif %}>{{ item.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      
+      <div class="col-md-3">
+        <label class="form-label fw-bold" style="font-size:0.75rem; text-transform:uppercase;">From Date</label>
+        <input type="date" name="from_date" class="form-control" value="{{ from_date }}">
+      </div>
+      
+      <div class="col-md-3">
+        <label class="form-label fw-bold" style="font-size:0.75rem; text-transform:uppercase;">To Date</label>
+        <input type="date" name="to_date" class="form-control" value="{{ to_date }}">
+      </div>
+      
+      <div class="col-md-2">
+        <label class="form-label fw-bold" style="font-size:0.75rem; text-transform:uppercase;">Location</label>
+        <select name="location" class="form-select">
+          <option value="">All Locations</option>
+          {% for loc in locations %}
+          <option value="{{ loc.id }}" {% if loc.id|stringformat:"s" == location_filter %}selected{% endif %}>{{ loc.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      
+      <div class="col-md-1 d-flex gap-2">
+        <button type="submit" class="btn btn-primary w-100">Filter</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card" style="border-radius:16px; border:none; box-shadow:0 4px 20px rgba(0,0,0,0.05); overflow:hidden;">
+  <div class="table-responsive">
+    <table class="table table-vcenter table-nowrap card-table table-hover">
+      <thead style="background:#f8fafc;">
+        <tr>
+          <th style="font-size:0.75rem; font-weight:700; color:#64748b; letter-spacing:0.5px; border-bottom:2px solid #e2e8f0; padding:1rem;">Date</th>
+          <th style="font-size:0.75rem; font-weight:700; color:#64748b; letter-spacing:0.5px; border-bottom:2px solid #e2e8f0; padding:1rem;">Item Name</th>
+          <th style="font-size:0.75rem; font-weight:700; color:#64748b; letter-spacing:0.5px; border-bottom:2px solid #e2e8f0; padding:1rem;">Amount Used</th>
+          <th style="font-size:0.75rem; font-weight:700; color:#64748b; letter-spacing:0.5px; border-bottom:2px solid #e2e8f0; padding:1rem;">Location</th>
+          <th style="font-size:0.75rem; font-weight:700; color:#64748b; letter-spacing:0.5px; border-bottom:2px solid #e2e8f0; padding:1rem;">Field Worker</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in logs %}
+        <tr>
+          <td style="padding:1rem;">{{ log.created_at|date:"d-M-Y" }}</td>
+          <td style="padding:1rem; font-weight:600; color:#1e293b;">{{ log.item.name }}</td>
+          <td style="padding:1rem;">
+            <span class="badge bg-purple-lt" style="font-size:0.85rem; padding:0.4rem 0.6rem; border-radius:6px;">
+              {{ log.amount_used|floatformat:"-2" }} {{ log.item.unit_of_measurement }}
+            </span>
+          </td>
+          <td style="padding:1rem;">{{ log.job.stock_warehouse.name|default:"-" }}</td>
+          <td style="padding:1rem;">{{ log.job.assigned_to.get_full_name|default:log.job.assigned_to.username }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" class="text-center text-muted py-5">
+            <i class="ti ti-mood-empty" style="font-size:2.5rem; display:block; margin-bottom:0.5rem; opacity:0.3;"></i>
+            No usage logs found for these filters.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

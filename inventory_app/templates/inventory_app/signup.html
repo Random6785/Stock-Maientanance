@@ -1,0 +1,24 @@
+{% extends 'inventory_app/base.html' %}
+
+{% block content %}
+<div class="card" style="margin-top: 20px;">
+    <h2>Create an Account</h2>
+    <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.help_text %}
+                <small style="color: #666; display: block; margin-top: -10px; margin-bottom: 10px;">{{ field.help_text|safe }}</small>
+            {% endif %}
+            {% for error in field.errors %}
+                <p style="color: #d32f2f; font-size: 14px; margin-top: -10px;">{{ error }}</p>
+            {% endfor %}
+        {% endfor %}
+        <button type="submit" class="btn" style="width: 100%; margin-top: 10px;">Sign Up</button>
+    </form>
+    <div style="text-align: center; margin-top: 15px;">
+        <p>Already have an account? <a href="{% url 'login_choice' %}" style="color: #00796b;">Login here</a></p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,98 @@
+{% extends 'inventory_app/base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 mt-2">
+    <h2 class="mb-0 fw-bold" style="font-size: 28px; color: #1e293b;">My Jobs</h2>
+</div>
+
+<div class="accordion" id="jobsAccordion">
+
+    {% if in_progress_jobs %}
+        <h4 class="text-muted mb-3 mt-4" style="font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800;">In Progress</h4>
+        {% for job in in_progress_jobs %}
+        <div class="accordion-item mb-3 border-0 shadow-sm" style="border-radius: 16px; overflow: hidden;">
+            <h2 class="accordion-header" id="heading{{ job.id }}">
+                <button class="accordion-button collapsed py-3 px-4 fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ job.id }}" aria-expanded="false" aria-controls="collapse{{ job.id }}" style="background: #fff; box-shadow: none;">
+                    <div class="d-flex flex-column w-100 me-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fs-5 text-dark">{{ job.title|default:"Job Assignment" }}</span>
+                            <span class="badge bg-primary rounded-pill px-2 py-1 ms-2" style="font-size: 11px;">In Progress</span>
+                        </div>
+                        <div class="text-muted fw-normal small"><i class="bi bi-calendar-event me-1 text-primary"></i>{{ job.scheduled_date|default:"TBD" }}</div>
+                    </div>
+                </button>
+            </h2>
+            <div id="collapse{{ job.id }}" class="accordion-collapse collapse" aria-labelledby="heading{{ job.id }}" data-bs-parent="#jobsAccordion">
+                <div class="accordion-body bg-light pt-4 pb-4 px-4" style="border-top: 1px solid #f1f5f9;">
+                    <p class="fs-6 lh-lg mb-4" style="color: #475569; font-weight: 500;">
+                        Take <strong>{{ job.chemical_instructions }}</strong> from <span class="badge bg-secondary">{{ job.stock_warehouse.name|default:"Warehouse" }}</span> and go to <strong>{{ job.execution_address }}</strong> for <strong>{{ job.title }}</strong>.
+                    </p>
+                    <div class="text-center">
+                        <a href="{% url 'job_detail' job.id %}" class="btn btn-primary w-100 py-3 fw-bold fs-6 rounded-3 shadow-sm" style="background: linear-gradient(135deg, #2563eb, #3b82f6); border: none;">
+                            Start Job <i class="bi bi-arrow-right ms-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if pending_jobs %}
+        <h4 class="text-muted mb-3 mt-4" style="font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800;">Pending</h4>
+        {% for job in pending_jobs %}
+        <div class="accordion-item mb-3 border-0 shadow-sm" style="border-radius: 16px; overflow: hidden;">
+            <h2 class="accordion-header" id="heading{{ job.id }}">
+                <button class="accordion-button collapsed py-3 px-4 fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ job.id }}" aria-expanded="false" aria-controls="collapse{{ job.id }}" style="background: #fff; box-shadow: none;">
+                    <div class="d-flex flex-column w-100 me-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fs-5 text-dark">{{ job.title|default:"Job Assignment" }}</span>
+                            <span class="badge bg-warning text-dark rounded-pill px-2 py-1 ms-2" style="font-size: 11px;">Pending</span>
+                        </div>
+                        <div class="text-muted fw-normal small"><i class="bi bi-calendar-event me-1 text-warning"></i>{{ job.scheduled_date|default:"TBD" }}</div>
+                    </div>
+                </button>
+            </h2>
+            <div id="collapse{{ job.id }}" class="accordion-collapse collapse" aria-labelledby="heading{{ job.id }}" data-bs-parent="#jobsAccordion">
+                <div class="accordion-body bg-light pt-4 pb-4 px-4" style="border-top: 1px solid #f1f5f9;">
+                    <p class="fs-6 lh-lg mb-4" style="color: #475569; font-weight: 500;">
+                        Take <strong>{{ job.chemical_instructions }}</strong> from <span class="badge bg-secondary">{{ job.stock_warehouse.name|default:"Warehouse" }}</span> and go to <strong>{{ job.execution_address }}</strong> for <strong>{{ job.title }}</strong>.
+                    </p>
+                    <div class="text-center">
+                        <a href="{% url 'job_detail' job.id %}" class="btn btn-primary w-100 py-3 fw-bold fs-6 rounded-3 shadow-sm" style="background: linear-gradient(135deg, #2563eb, #3b82f6); border: none;">
+                            Start Job <i class="bi bi-arrow-right ms-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if not pending_jobs and not in_progress_jobs %}
+        <div class="card" style="text-align: center; padding: 60px 20px; background-color: #ffffff; border: 2px dashed #cbd5e1; border-radius: 16px; box-shadow: none;">
+            <i class="bi bi-check-circle-fill" style="font-size: 64px; color: #10b981; margin-bottom: 20px;"></i>
+            <h3 style="color: #1e293b; margin-top: 0; font-size: 24px; font-weight: 700;">You're all caught up!</h3>
+            <p style="color: #64748b; font-size: 16px; font-weight: 500;">No new tasks assigned to you right now.</p>
+        </div>
+    {% endif %}
+
+    {% if completed_jobs %}
+        <div data-section="completed">
+            <h4 class="text-muted mb-3 mt-5" style="font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800;">Completed</h4>
+        </div>
+        {% for job in completed_jobs %}
+        <div class="card mb-3 border-0 shadow-sm" style="border-radius: 16px;">
+            <div class="card-body py-3 px-4">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="fs-5 text-dark fw-bold">{{ job.title|default:"Job Assignment" }}</span>
+                    <span class="badge bg-success rounded-pill px-2 py-1" style="font-size: 11px;">Completed</span>
+                </div>
+                <div class="text-muted small"><i class="bi bi-calendar-check me-1 text-success"></i>{{ job.execution_date|date:"M d, Y" }}</div>
+            </div>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+</div>
+{% endblock %}

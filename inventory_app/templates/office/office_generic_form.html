@@ -1,0 +1,325 @@
+{% extends 'office/office_base.html' %}
+{% block title %}{{ page_title }} — Pest Control OS{% endblock %}
+
+{% block extra_head %}
+<style>
+  /* ── Form Page Layout ───────────────────────────────────────────────────── */
+  .form-page-wrapper {
+    max-width: 820px;
+    margin: 0 auto;
+  }
+
+  /* ── Form Card ──────────────────────────────────────────────────────────── */
+  .form-card {
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    border: 1px solid #f0f2f7;
+    overflow: hidden;
+  }
+  .form-card-header {
+    padding: 1.75rem 2rem;
+    border-bottom: 1px solid #f0f2f7;
+    background: #fafbff;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .form-card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+  }
+  .form-card-icon.create { background: #eff6ff; color: #2563eb; }
+  .form-card-icon.edit   { background: #fef3c7; color: #d97706; }
+
+  .form-card-header h1 {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
+    letter-spacing: -0.3px;
+  }
+  .form-card-header p {
+    font-size: 0.78rem;
+    color: #94a3b8;
+    margin: 0.2rem 0 0;
+  }
+  .form-card-body {
+    padding: 2rem;
+  }
+
+  /* ── Field Groups ───────────────────────────────────────────────────────── */
+  .field-row {
+    display: grid;
+    gap: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+  .field-row.cols-2 { grid-template-columns: 1fr 1fr; }
+  .field-row.cols-1 { grid-template-columns: 1fr; }
+
+  @media (max-width: 600px) {
+    .field-row.cols-2 { grid-template-columns: 1fr; }
+  }
+
+  .field-group { display: flex; flex-direction: column; gap: 0.4rem; }
+  .field-group label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #374151;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .field-group .field-hint {
+    font-size: 0.73rem;
+    color: #94a3b8;
+    margin-top: 0.25rem;
+  }
+
+  /* Polish the native inputs to match our design system */
+  .field-group .form-control,
+  .field-group .form-select {
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 0.6rem 0.9rem;
+    font-size: 0.9rem;
+    color: #1e293b;
+    background-color: #ffffff;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .field-group .form-control:focus,
+  .field-group .form-select:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+    outline: none;
+  }
+  .field-group .form-control.is-invalid,
+  .field-group .form-select.is-invalid {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+  }
+  .field-group textarea.form-control { resize: vertical; min-height: 90px; }
+
+  /* Inline error messages */
+  .field-errors {
+    list-style: none;
+    padding: 0;
+    margin: 0.3rem 0 0;
+  }
+  .field-errors li {
+    font-size: 0.78rem;
+    color: #dc2626;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .field-errors li::before {
+    content: '⚠';
+    font-size: 0.7rem;
+  }
+
+  /* Section divider labels */
+  .form-section-label {
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #cbd5e1;
+    margin: 0.5rem 0 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .form-section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #f1f5f9;
+  }
+
+  /* ── Action Footer ──────────────────────────────────────────────────────── */
+  .form-card-footer {
+    padding: 1.25rem 2rem;
+    border-top: 1px solid #f0f2f7;
+    background: #fafbff;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+  }
+  .btn-cancel {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #64748b;
+    background: transparent;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 0.55rem 1.2rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s;
+  }
+  .btn-cancel:hover {
+    border-color: #94a3b8;
+    color: #374151;
+    background: #f8fafc;
+  }
+  .btn-submit {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #ffffff;
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    border: none;
+    border-radius: 10px;
+    padding: 0.6rem 1.5rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    transition: all 0.15s;
+  }
+  .btn-submit:hover {
+    background: linear-gradient(135deg, #1d4ed8, #2563eb);
+    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.4);
+    transform: translateY(-1px);
+  }
+  .btn-submit:active { transform: translateY(0); }
+
+  {% if is_edit %}
+  .btn-submit {
+    background: linear-gradient(135deg, #d97706, #f59e0b);
+    box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
+  }
+  .btn-submit:hover {
+    background: linear-gradient(135deg, #b45309, #d97706);
+    box-shadow: 0 6px 18px rgba(217, 119, 6, 0.4);
+  }
+  {% endif %}
+
+  /* Non-field errors banner */
+  .form-errors-banner {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.85rem;
+    color: #b91c1c;
+    font-weight: 600;
+  }
+  .form-errors-banner ul { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-page-wrapper">
+
+  <!-- Breadcrumb -->
+  <nav class="mb-4" style="font-size:0.8rem; color:#94a3b8;">
+    <a href="{% url 'office_dashboard' %}" style="color:#94a3b8; text-decoration:none;">Dashboard</a>
+    <span class="mx-2">/</span>
+    {% if breadcrumb_parent_url %}
+    <a href="{% url breadcrumb_parent_url %}" style="color:#94a3b8; text-decoration:none;">{{ breadcrumb_parent_label }}</a>
+    <span class="mx-2">/</span>
+    {% else %}
+    <a href="{% url 'office_job_list' %}" style="color:#94a3b8; text-decoration:none;">All Jobs</a>
+    <span class="mx-2">/</span>
+    {% endif %}
+    <span style="color:#1e293b; font-weight:600;">{{ page_title }}</span>
+  </nav>
+
+  <div class="form-card">
+
+    <!-- Card Header -->
+    <div class="form-card-header">
+      <div class="form-card-icon {% if is_edit %}edit{% else %}create{% endif %}">
+        {% if is_edit %}
+          <i class="ti ti-edit"></i>
+        {% else %}
+          <i class="ti ti-circle-plus"></i>
+        {% endif %}
+      </div>
+      <div>
+        <h1>{{ form_title }}</h1>
+        <p>{{ form_subtitle }}</p>
+      </div>
+    </div>
+
+    <!-- Card Body -->
+    <div class="form-card-body">
+      <form method="post" novalidate id="generic-form" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- Non-field errors -->
+        {% if form.non_field_errors %}
+        <div class="form-errors-banner">
+          <i class="ti ti-alert-circle me-2"></i>Please correct the errors below:
+          <ul>
+            {% for error in form.non_field_errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+
+        {% for field in form %}
+        <div class="field-row cols-1">
+          <div class="field-group">
+            <label for="{{ field.id_for_label }}">
+              {{ field.label }}
+            </label>
+            {{ field }}
+            {% if field.help_text %}
+              <span class="field-hint">{{ field.help_text }}</span>
+            {% endif %}
+            {% if field.errors %}
+              <ul class="field-errors">
+                {% for e in field.errors %}<li>{{ e }}</li>{% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+
+      </form>
+    </div>
+    <!-- /Card Body -->
+
+    <!-- Card Footer (action buttons) -->
+    <div class="form-card-footer">
+      <a href="{% if cancel_url %}{% url cancel_url %}{% else %}{% url 'office_job_list' %}{% endif %}" class="btn-cancel">
+        <i class="ti ti-x"></i> Cancel
+      </a>
+      <button type="submit" form="generic-form" class="btn-submit" id="submit-btn">
+        {% if is_edit %}
+          <i class="ti ti-device-floppy"></i>
+        {% else %}
+          <i class="ti ti-circle-plus"></i>
+        {% endif %}
+        {{ submit_label }}
+      </button>
+    </div>
+
+  </div><!-- /form-card -->
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // ── Submit loading state ──────────────────────────────────────────────────
+  document.getElementById('generic-form').addEventListener('submit', function () {
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Saving…';
+  });
+</script>
+{% endblock %}

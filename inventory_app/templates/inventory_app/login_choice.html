@@ -1,0 +1,65 @@
+{% extends 'inventory_app/base.html' %}
+
+{% block nav %}{% endblock nav %}
+
+{% block extra_style %}
+<style>body { padding-bottom: 0 !important; }</style>
+{% endblock %}
+
+{% block content %}
+<div class="card" style="margin-top: 80px; text-align: center;">
+    <h1 style="margin-bottom: 24px; font-size: 28px;">Sign In</h1>
+    
+    <div style="display: flex; gap: 12px; justify-content: center; margin-bottom: 32px;">
+        <button type="button" class="login-type-btn" data-type="worker" style="padding: 10px 24px; background-color: {% if login_type == 'admin' %}#e0e0e0{% else %}#0d6efd{% endif %}; color: {% if login_type == 'admin' %}#333{% else %}white{% endif %}; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Regular</button>
+        <button type="button" class="login-type-btn" data-type="admin" style="padding: 10px 24px; background-color: {% if login_type == 'admin' %}#6c757d{% else %}#e0e0e0{% endif %}; color: {% if login_type == 'admin' %}white{% else %}#333{% endif %}; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Admin</button>
+    </div>
+    
+    <form method="post" id="login-form" style="text-align: left;">
+        {% csrf_token %}
+        <input type="hidden" name="login_type" id="login_type" value="{{ login_type|default:'worker' }}">
+        
+        <label for="id_username" style="display: block; margin-bottom: 8px; font-weight: 500;">Username:</label>
+        <input type="text" name="username" autofocus autocapitalize="none" autocomplete="username" maxlength="150" required id="id_username" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 16px; box-sizing: border-box; font-size: 16px;">
+        
+        <label for="id_password" style="display: block; margin-bottom: 8px; font-weight: 500;">Password:</label>
+        <input type="password" name="password" autocomplete="current-password" required id="id_password" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 24px; box-sizing: border-box; font-size: 16px;">
+        
+        <button type="submit" id="submit-btn" class="btn" style="width: 100%; position: relative;">
+            <span id="btn-text">Login</span>
+            <div id="btn-spinner" class="spinner-border spinner-border-sm" role="status" style="display: none; position: absolute; right: 24px;">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </button>
+    </form>
+</div>
+
+<script>
+    document.querySelectorAll('.login-type-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.login-type-btn').forEach(b => {
+                if (b === this) {
+                    b.style.backgroundColor = this.dataset.type === 'worker' ? '#0d6efd' : '#6c757d';
+                    b.style.color = 'white';
+                } else {
+                    b.style.backgroundColor = '#e0e0e0';
+                    b.style.color = '#333';
+                }
+            });
+            document.getElementById('login_type').value = this.dataset.type;
+        });
+    });
+
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+        const btn = document.getElementById('submit-btn');
+        const text = document.getElementById('btn-text');
+        const spinner = document.getElementById('btn-spinner');
+        
+        text.innerText = 'Logging in...';
+        spinner.style.display = 'inline-block';
+        btn.style.opacity = '0.8';
+        // We do not disable the button completely to ensure form submission proceeds normally in all browsers.
+        btn.style.pointerEvents = 'none';
+    });
+</script>
+{% endblock %}

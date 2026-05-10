@@ -1,0 +1,210 @@
+{% extends 'office/office_base.html' %}
+{% block title %}Dashboard — Pest Control OS{% endblock %}
+
+{% block content %}
+
+<!-- ── High-End Stat Cards Row ──────────────────────────────────────────────────── -->
+<div class="row g-3 mb-4">
+
+  <!-- Pending Jobs -->
+  <div class="col-sm-4 col-xl-4">
+    <div class="card stat-card h-100 position-relative overflow-hidden" style="border: 1px solid rgba(0,0,0,0.03);">
+      <div class="position-absolute"
+        style="top: -20px; right: -20px; width: 120px; height: 120px; background: radial-gradient(circle, rgba(217, 119, 6, 0.15) 0%, rgba(217, 119, 6, 0) 70%); border-radius: 50%;">
+      </div>
+      <div class="card-body">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <div class="text-muted text-uppercase"
+            style="font-size:0.75rem; font-weight:700; letter-spacing:0.08em; color: #64748b !important;">Pending Jobs
+          </div>
+          <div class="stat-icon shadow-sm"
+            style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); color: #d97706; width: 40px; height: 40px; font-size: 1.4rem; border-radius: 12px;">
+            <i class="ti ti-clock-hour-4"></i>
+          </div>
+        </div>
+        <div class="d-flex align-items-end gap-3 mb-1 mt-3">
+          <div style="font-size:2.4rem; font-weight:800; line-height:1; color:#0f172a;">{{ total_pending }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Completed Today -->
+  <div class="col-sm-4 col-xl-4">
+    <div class="card stat-card h-100 position-relative overflow-hidden" style="border: 1px solid rgba(0,0,0,0.03);">
+      <div class="position-absolute"
+        style="top: -20px; right: -20px; width: 120px; height: 120px; background: radial-gradient(circle, rgba(22, 163, 74, 0.15) 0%, rgba(22, 163, 74, 0) 70%); border-radius: 50%;">
+      </div>
+      <div class="card-body">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <div class="text-muted text-uppercase"
+            style="font-size:0.75rem; font-weight:700; letter-spacing:0.08em; color: #64748b !important;">Completed
+            Today</div>
+          <div class="stat-icon shadow-sm"
+            style="background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); color: #16a34a; width: 40px; height: 40px; font-size: 1.4rem; border-radius: 12px;">
+            <i class="ti ti-circle-check"></i>
+          </div>
+        </div>
+        <div class="d-flex align-items-end gap-3 mb-1 mt-3">
+          <div style="font-size:2.4rem; font-weight:800; line-height:1; color:#0f172a;">{{ completed_today }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Total Inventory -->
+  <div class="col-sm-4 col-xl-4">
+    <div class="card stat-card h-100 position-relative overflow-hidden" style="border: 1px solid rgba(0,0,0,0.03);">
+      <div class="position-absolute"
+        style="top: -20px; right: -20px; width: 120px; height: 120px; background: radial-gradient(circle, rgba(124, 58, 237, 0.15) 0%, rgba(124, 58, 237, 0) 70%); border-radius: 50%;">
+      </div>
+      <div class="card-body">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <div class="text-muted text-uppercase"
+            style="font-size:0.75rem; font-weight:700; letter-spacing:0.08em; color: #64748b !important;">Total Stock
+            Units</div>
+          <div class="stat-icon shadow-sm"
+            style="background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%); color: #7c3aed; width: 40px; height: 40px; font-size: 1.4rem; border-radius: 12px;">
+            <i class="ti ti-flask"></i>
+          </div>
+        </div>
+        <div class="d-flex align-items-end gap-3 mb-1 mt-3">
+          <div style="font-size:2.4rem; font-weight:800; line-height:1; color:#0f172a;">{{ total_inventory }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- /Stat Cards -->
+
+<!-- ── Interactive Charts Row ──────────────────────────────────────────────────────── -->
+<div class="row g-3 mb-4">
+  <div class="col-lg-4">
+    <div class="card table-card h-100">
+      <div class="card-header bg-white py-4 px-4 border-0">
+        <h3 class="card-title mb-0" style="font-size:1.1rem; font-weight:800; color: #0f172a;">Job Status Distribution
+        </h3>
+      </div>
+      <div class="card-body pt-0 pb-4 d-flex align-items-center justify-content-center">
+        <div id="chart-job-status" style="width: 100%; min-height: 250px;"></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-8">
+    <div class="card table-card h-100">
+      <div class="card-header bg-white border-0 py-4 px-4 d-flex justify-content-between align-items-center">
+        <h3 class="card-title mb-0" style="font-size:1.1rem; font-weight:800; color: #0f172a;">Chemicals Used (Last 7
+          Days)</h3>
+        <a href="{% url 'inventory_report' %}" class="btn btn-sm btn-outline-primary">Filter</a>
+      </div>
+      <div class="card-body pt-0 pb-4">
+        <div id="chart-chemicals" style="width: 100%; min-height: 250px;"></div>
+      </div>
+    </div>
+    
+
+  </div>
+</div>
+<!-- /Interactive Charts Row -->
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    var jobStatusData = {{ job_status_data|safe }};
+    var chemicalsSeries = {{ chemicals_series|safe }};
+    var dateLabels = {{ date_labels|safe }};
+
+  // ── Donut Chart for Job Status ──
+  var optionsStatus = {
+    series: jobStatusData,
+    labels: ['Completed', 'Pending'],
+    chart: {
+      type: 'donut',
+      height: 280,
+      fontFamily: 'inherit',
+    },
+    colors: ['#16a34a', '#f59e0b'],
+    plotOptions: {
+      pie: {
+        donut: {
+          size: '70%',
+          labels: {
+            show: true,
+            name: { fontSize: '14px', fontWeight: 600, color: '#64748b' },
+            value: { fontSize: '24px', fontWeight: 800, color: '#0f172a' }
+          }
+        }
+      }
+    },
+    dataLabels: { enabled: false },
+    stroke: { width: 3, colors: ['#ffffff'] },
+    legend: {
+      position: 'bottom',
+      fontWeight: 600,
+      markers: { radius: 12 }
+    }
+  };
+
+  var chartStatus = new ApexCharts(document.querySelector("#chart-job-status"), optionsStatus);
+  chartStatus.render();
+
+  // ── Bar Chart for Chemicals (7 Days) ──
+  var optionsChemicals = {
+    series: chemicalsSeries,
+    chart: {
+      type: 'bar',
+      height: 280,
+      stacked: true,
+      fontFamily: 'inherit',
+      toolbar: { show: false },
+      parentHeightOffset: 0,
+    },
+    colors: ['#3b82f6', '#8b5cf6', '#f43f5e'],
+    plotOptions: {
+      bar: {
+        horizontal: false,
+        borderRadius: 4,
+        columnWidth: '40%',
+      },
+    },
+    dataLabels: { enabled: false },
+    stroke: { width: 0 },
+    xaxis: {
+      categories: dateLabels,
+      labels: { style: { colors: '#64748b', fontWeight: 600 } },
+      axisBorder: { show: false },
+      axisTicks: { show: false }
+    },
+    yaxis: {
+      labels: { style: { colors: '#64748b', fontWeight: 600 } }
+    },
+    grid: {
+      borderColor: 'rgba(0,0,0,0.05)',
+      strokeDashArray: 4,
+      padding: { top: 0, bottom: 0, left: 10, right: 0 }
+    },
+    legend: {
+      position: 'top',
+      horizontalAlign: 'right',
+      fontWeight: 600,
+      markers: { radius: 12, offsetX: -2 },
+      itemMargin: { horizontal: 10, vertical: 0 }
+    },
+    tooltip: {
+      y: {
+        formatter: function(val) {
+          return Math.round(val);
+        }
+      }
+    },
+    fill: { opacity: 1 }
+  };
+
+  var chartChemicals = new ApexCharts(document.querySelector("#chart-chemicals"), optionsChemicals);
+  chartChemicals.render();
+  });
+</script>
+{% endblock %}

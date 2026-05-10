@@ -1,0 +1,80 @@
+{% extends 'office/office_base.html' %}
+{% block title %}{{ page_title }} — Pest Control OS{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <a href="{% url 'office_worker_list' %}" class="text-muted text-decoration-none mb-2 d-inline-block" style="font-size:0.85rem; font-weight:600;">
+      <i class="ti ti-arrow-left me-1"></i>Back to Field Workers
+    </a>
+    <h2 class="fw-bold mb-1" style="font-size:1.4rem; color:#0f172a;">{{ page_title }}</h2>
+    <p class="text-muted mb-0" style="font-size:0.9rem;">Create a new secure account for the field team.</p>
+  </div>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-md-8 col-lg-6">
+    <div class="card shadow-sm border-0" style="border-radius: 16px;">
+      <div class="card-header bg-white py-3 border-0">
+        <h3 class="card-title fw-bold m-0" style="color: #1e293b;"><i class="ti ti-user-shield text-primary me-2"></i>Account Details</h3>
+      </div>
+      <div class="card-body px-4 pb-4">
+        
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger rounded-3" role="alert">
+            <ul class="mb-0 ps-3">
+              {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+
+        <form method="post">
+          {% csrf_token %}
+          
+          <div class="row g-3">
+            {% for field in form %}
+              <div class="col-12">
+                <label class="form-label fw-semibold text-secondary" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                
+                {% if field.help_text %}
+                  <div class="form-text mt-1" style="font-size: 0.75rem;">{{ field.help_text|safe }}</div>
+                {% endif %}
+
+                {% if field.errors %}
+                  <div class="invalid-feedback d-block mt-1 fw-medium">
+                    {% for error in field.errors %}
+                      {{ error }}
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+          
+          <div class="mt-4 pt-3 border-top text-end">
+            <a href="{% url 'office_worker_list' %}" class="btn btn-outline-secondary rounded-pill px-4 fw-bold shadow-sm me-2">Cancel</a>
+            <button type="submit" id="worker-save-btn" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">Save</button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const form = document.querySelector('form[method="post"]');
+  const saveBtn = document.getElementById('worker-save-btn');
+  if (form && saveBtn) {
+    form.addEventListener('submit', function () {
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving...';
+    });
+  }
+});
+</script>
+{% endblock %}
