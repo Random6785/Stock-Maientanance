@@ -177,6 +177,16 @@
       list-style: none;
       padding: 0;
       margin: 0;
+      position: relative;
+    }
+    .nav-magic-line {
+      position: absolute;
+      bottom: 0;
+      height: 3px;
+      background: #2563eb;
+      border-radius: 3px 3px 0 0;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: none;
     }
     .main-nav .nav-list .nav-item { display: flex; }
     .main-nav .nav-link {
@@ -499,6 +509,43 @@
 
   <!-- ── Nav Click Loading States ──────────────────────────────── -->
   <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const navContainer = document.querySelector('#main-nav-list');
+      if (!navContainer) return;
+
+      const navLinks = navContainer.querySelectorAll('.nav-link');
+      if (!navLinks.length) return;
+
+      const magicLine = document.createElement('span');
+      magicLine.className = 'nav-magic-line';
+      navContainer.appendChild(magicLine);
+
+      let activeLink = navContainer.querySelector('.nav-link.active') || navLinks[0];
+
+      function moveMagicLine(target) {
+        if (!target) return;
+        magicLine.style.width = target.offsetWidth + 'px';
+        magicLine.style.left = target.offsetLeft + 'px';
+      }
+
+      moveMagicLine(activeLink);
+
+      navLinks.forEach(function (link) {
+        link.addEventListener('mouseenter', function () {
+          moveMagicLine(link);
+        });
+      });
+
+      navContainer.addEventListener('mouseleave', function () {
+        moveMagicLine(activeLink);
+      });
+
+      window.addEventListener('resize', function () {
+        activeLink = navContainer.querySelector('.nav-link.active') || activeLink || navLinks[0];
+        moveMagicLine(activeLink);
+      });
+    });
+
     (function () {
       const navLinks = document.querySelectorAll('#main-nav-list .nav-link');
 

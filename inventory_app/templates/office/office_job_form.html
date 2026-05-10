@@ -312,7 +312,7 @@
 
     <!-- Card Body -->
     <div class="form-card-body">
-      <form method="post" novalidate id="job-form">
+      <form method="post" id="job-form">
         {% csrf_token %}
 
         <!-- Non-field errors -->
@@ -1047,420 +1047,316 @@
 {% endblock %}
 
 {% block extra_js %}
-<!-- Select2 & SweetAlert2 JS -->
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-  // Initialize Select2 for assigned_workers
-  $(document).ready(function() {
-      $('#id_assigned_workers').select2({
+document.addEventListener('DOMContentLoaded', function() {
+  
+  // ── 1. Initialize Select2 ──────────────────────────────────────────────────
+  const assignedWorkersEl = document.getElementById('id_assigned_workers');
+  if (assignedWorkersEl) {
+      $(assignedWorkersEl).select2({
           placeholder: "Select workers...",
           allowClear: true,
           width: '100%'
       });
-  });
-
-  // ── Submit loading state & SweetAlert2 ─────────────────────────────────────
-  document.getElementById('job-form').addEventListener('submit', function (e) {
-    e.preventDefault(); // Stop default submission
-
-    const form = this;
-    const btn = document.getElementById('submit-btn');
-    if (btn) {
-      btn.disabled = true;
-      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Saving…';
-    }
-
-    // Show SweetAlert Animation
-    const isEdit = {% if is_edit %}true{% else %}false{% endif %};
-    Swal.fire({
-      title: isEdit ? 'Job Saved!' : 'Job Created!',
-      text: isEdit ? 'Changes saved successfully.' : 'Job created and assigned successfully.',
-      icon: 'success',
-      timer: 1500,
-      showConfirmButton: false
-    }).then(() => {
-      // Actually submit the form after the animation completes
-      form.submit();
-    });
-  });
-
-  // ── Quick Edit Logic ──────────────────────────────────────────────────────
-  let quickEditModal;
-  
-  document.addEventListener('DOMContentLoaded', function() {
-    quickEditModal = new bootstrap.Modal(document.getElementById('quickEditModal'));
-    
-    document.getElementById('quickEditSaveBtn').addEventListener('click', saveQuickEdit);
-
-    // ── Conditional UI Logic ──────────────────────────────────────────────────
-    const isThirdPartyCheckbox = document.getElementById('{{ form.is_third_party_vendor.id_for_label }}');
-    const siteGroup = document.getElementById('third-party-site-group');
-    const addressGroup = document.getElementById('third-party-address-group');
-
-    if (isThirdPartyCheckbox && siteGroup && addressGroup) {
-      function toggleThirdPartyFields() {
-        if (isThirdPartyCheckbox.checked) {
-          siteGroup.style.display = 'block';
-          addressGroup.style.display = 'block';
-        } else {
-          siteGroup.style.display = 'none';
-          addressGroup.style.display = 'none';
-        }
-      }
-
-      isThirdPartyCheckbox.addEventListener('change', toggleThirdPartyFields);
-      toggleThirdPartyFields(); // run on load
-    }
-
-    // ── Quick Assign Logic ────────────────────────────────────────────────────
-    const assignedToEl = document.getElementById('id_assigned_workers');
-    const branchEl = document.getElementById('id_branch');
-    const warehouseEl = document.getElementById('id_stock_warehouse');
-    const quickAssignBtn = document.getElementById('quick-assign-btn');
-
-    function checkQuickAssign() {
-      if (quickAssignBtn && assignedToEl && branchEl && warehouseEl) {
-        if (assignedToEl.value && branchEl.value.trim() !== '' && warehouseEl.value) {
-          quickAssignBtn.style.opacity = '1';
-          quickAssignBtn.style.pointerEvents = 'auto';
-          quickAssignBtn.style.transform = 'translateY(-50%) translateX(0)';
-        } else {
-          quickAssignBtn.style.opacity = '0';
-          quickAssignBtn.style.pointerEvents = 'none';
-          quickAssignBtn.style.transform = 'translateY(-50%) translateX(20px)';
-        }
-      }
-    }
-
-    if (assignedToEl) assignedToEl.addEventListener('change', checkQuickAssign);
-    if (branchEl) branchEl.addEventListener('input', checkQuickAssign);
-    if (warehouseEl) warehouseEl.addEventListener('change', checkQuickAssign);
-    
-    checkQuickAssign();
-  });
-
-  function openQuickEditModal(entityType, action) {
-    const selectEl = document.getElementById(`id_${entityType}`);
-    const modalTitle = document.getElementById('quickEditModalTitle');
-    
-    document.getElementById('qe_entity_type').value = entityType;
-    document.getElementById('quickEditForm').reset();
-    
-    const EntityLabel = entityType === 'cha' ? 'CHA' : 'Exporter';
-
-    if (action === 'add') {
-      document.getElementById('qe_id').value = '';
-      modalTitle.innerText = `Add New ${EntityLabel}`;
-      quickEditModal.show();
-    } else if (action === 'edit') {
-      const selectedId = selectEl.value;
-      if (!selectedId) {
-        alert(`Please select a ${EntityLabel} to edit first.`);
-        return;
-      }
-      
-      document.getElementById('qe_id').value = selectedId;
-      modalTitle.innerText = `Edit ${EntityLabel}`;
-      
-      // Fetch details
-      fetch(`/office/api/${entityType}/${selectedId}/`)
-        .then(response => response.json())
-        .then(data => {
-          document.getElementById('qe_name').value = data.name || '';
-          document.getElementById('qe_contact_person').value = data.contact_person || '';
-          document.getElementById('qe_mobile_number').value = data.mobile_number || '';
-          document.getElementById('qe_address').value = data.address || '';
-          quickEditModal.show();
-        })
-        .catch(err => {
-          alert('Error fetching details.');
-          console.error(err);
-        });
-    }
   }
 
-  function saveQuickEdit() {
-    const entityType = document.getElementById('qe_entity_type').value;
-    const data = {
-      id: document.getElementById('qe_id').value,
-      name: document.getElementById('qe_name').value,
-      contact_person: document.getElementById('qe_contact_person').value,
-      mobile_number: document.getElementById('qe_mobile_number').value,
-      address: document.getElementById('qe_address').value,
-    };
-
-    if (!data.name) {
-      alert("Name is required.");
-      return;
-    }
-
-    // CSRF Token logic
-    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-
-    const btn = document.getElementById('quickEditSaveBtn');
-    const originalText = btn.innerText;
-    btn.disabled = true;
-    btn.innerText = 'Saving...';
-
-    fetch(`/office/api/${entityType}/save/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': csrfToken
-      },
-      body: JSON.stringify(data)
-    })
-    .then(r => r.json())
-    .then(res => {
-      btn.disabled = false;
-      btn.innerText = originalText;
-      if (res.success) {
-        const selectEl = document.getElementById(`id_${entityType}`);
-        
-        if (!data.id) {
-          // Add new option and select it
-          const newOption = new Option(res.name, res.id, true, true);
-          selectEl.add(newOption);
-        } else {
-          // Update existing option
-          const option = selectEl.querySelector(`option[value="${res.id}"]`);
-          if (option) option.text = res.name;
-        }
-        
-        quickEditModal.hide();
-      } else {
-        alert("Failed to save: " + JSON.stringify(res.errors));
+  // ── 2. Form Submission (Minimal & Accurate) ───────────────────────────────
+  const jobForm = document.getElementById('job-form');
+  if (jobForm) {
+    jobForm.addEventListener('submit', function (e) {
+      // Because we removed 'novalidate', the browser stops empty required fields automatically.
+      // If the code reaches here, it means validation passed and data is actually going to the server.
+      const btn = document.getElementById('submit-btn');
+      if (btn) {
+        // Delay disabling slightly so the form payload submits properly
+        setTimeout(() => {
+          btn.disabled = true;
+          btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Saving…';
+        }, 10);
       }
-    })
-    .catch(err => {
-      btn.disabled = false;
-      btn.innerText = originalText;
-      alert("Network error saving details.");
-      console.error(err);
     });
   }
 
-  // ── Create Client Logic ───────────────────────────────────────────────────
-  document.getElementById('createClientSaveBtn').addEventListener('click', function() {
-    const name = document.getElementById('cc_name').value.trim();
-    if (!name) {
-      alert("Please provide a client name.");
-      return;
-    }
-    
-    const data = {
-      name: name,
-      address: document.getElementById('cc_address').value,
-      city: document.getElementById('cc_city').value,
-      country: document.getElementById('cc_country').value
-    };
+  // ── 3. Conditional UI Logic (Third Party Vendor) ───────────────────────────
+  const isThirdPartyCheckbox = document.getElementById('{{ form.is_third_party_vendor.id_for_label }}');
+  const siteGroup = document.getElementById('third-party-site-group');
+  const addressGroup = document.getElementById('third-party-address-group');
 
-    const btn = document.getElementById('createClientSaveBtn');
-    btn.disabled = true;
-    btn.innerText = "Saving...";
-
-    fetch("{% url 'api_create_client' %}", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
-      },
-      body: JSON.stringify(data)
-    })
-    .then(response => response.json())
-    .then(result => {
-      btn.disabled = false;
-      btn.innerText = "Save Client";
-
-      if (result.success) {
-        // Hide Modal
-        const modalEl = document.getElementById('createClientModal');
-        const modalObj = bootstrap.Modal.getInstance(modalEl);
-        modalObj.hide();
-
-        // Clear Form
-        document.getElementById('createClientForm').reset();
-
-        // Append Option
-        const selectEl = document.getElementById('id_client');
-        const newOption = new Option(result.name, result.id, true, true);
-        selectEl.add(newOption);
-        
-        // Success feedback
-        alert(`Client "${result.name}" added successfully!`);
+  if (isThirdPartyCheckbox && siteGroup && addressGroup) {
+    function toggleThirdPartyFields() {
+      if (isThirdPartyCheckbox.checked) {
+        siteGroup.style.display = 'block';
+        addressGroup.style.display = 'block';
       } else {
-        alert("Error creating client: " + JSON.stringify(result.errors));
+        siteGroup.style.display = 'none';
+        addressGroup.style.display = 'none';
       }
-    })
-    .catch(error => {
-      btn.disabled = false;
-      btn.innerText = "Save Client";
-      alert("Network error.");
-      console.error(error);
-    });
-  });
-
-  // ── Copy / Paste Engine (Foolproof) ──────────────────────────
-  document.addEventListener('DOMContentLoaded', function() {
-    
-    const copyBtn = document.getElementById('btn-copy-data');
-    if (copyBtn) {
-      copyBtn.addEventListener('click', function() {
-        try {
-          const form = document.querySelector('form');
-          if (!form) {
-            console.error("CRITICAL ERROR: No form found on the page.");
-            alert('Form not found!');
-            return;
-          }
-
-          const EXCLUDED_FIELDS = [
-            'csrfmiddlewaretoken', 'id', 'certificate_number', 'status',
-            'datetime_commenced', 'datetime_completed', 'assigned_workers', 'assigned_to',
-            'execution_date', 'scheduled_date'
-          ];
-
-          const data = {};
-          const fields = form.querySelectorAll('input[name], select[name], textarea[name]');
-          
-          fields.forEach(element => {
-            try {
-              if (EXCLUDED_FIELDS.includes(element.name)) return;
-              if (['submit', 'button', 'reset', 'image'].includes(element.type)) return;
-
-              if (element.type === 'checkbox') {
-                data[element.name] = element.checked;
-              } else if (element.type === 'radio') {
-                if (element.checked) data[element.name] = element.value;
-              } else {
-                data[element.name] = element.value;
-              }
-            } catch (fieldError) {
-              console.warn(`[Copy] Skipped field "${element.name}":`, fieldError.message);
-            }
-          });
-
-          localStorage.setItem('copiedJob', JSON.stringify(data));
-          console.log("Data copied!");
-
-          const originalHTML = copyBtn.innerHTML;
-          copyBtn.innerHTML = '✅ Copied!';
-          copyBtn.disabled = true;
-          
-          setTimeout(() => {
-            copyBtn.innerHTML = originalHTML;
-            copyBtn.disabled = false;
-          }, 2000);
-        } catch (error) {
-          console.error("CRITICAL ERROR: ", error);
-          alert('Error copying data: ' + error.message);
-        }
-      });
     }
+    isThirdPartyCheckbox.addEventListener('change', toggleThirdPartyFields);
+    toggleThirdPartyFields(); // run on load
+  }
 
-    const pasteBtn = document.getElementById('btn-paste-data');
-    if (pasteBtn) {
-      pasteBtn.addEventListener('click', function() {
-        try {
-          const form = document.querySelector('form');
-          if (!form) {
-            console.error("CRITICAL ERROR: No form found on the page.");
-            alert('Form not found!');
-            return;
-          }
+  // ── 4. Quick Assign Logic ──────────────────────────────────────────────────
+  const branchEl = document.getElementById('id_branch');
+  const warehouseEl = document.getElementById('id_stock_warehouse');
+  const quickAssignBtn = document.getElementById('quick-assign-btn');
 
-          const raw = localStorage.getItem('copiedJob');
-          if (!raw) {
-            alert('No data to paste! Please click "Copy Data" from another job first.');
-            return;
-          }
+  function checkQuickAssign() {
+    if (quickAssignBtn && assignedWorkersEl && branchEl && warehouseEl) {
+      // Check if values exist. For jQuery select2, use $(el).val()
+      const workersSelected = $(assignedWorkersEl).val() && $(assignedWorkersEl).val().length > 0;
+      if (workersSelected && branchEl.value.trim() !== '' && warehouseEl.value) {
+        quickAssignBtn.style.opacity = '1';
+        quickAssignBtn.style.pointerEvents = 'auto';
+        quickAssignBtn.style.transform = 'translateY(-50%) translateX(0)';
+      } else {
+        quickAssignBtn.style.opacity = '0';
+        quickAssignBtn.style.pointerEvents = 'none';
+        quickAssignBtn.style.transform = 'translateY(-50%) translateX(20px)';
+      }
+    }
+  }
 
-          let data = {};
-          try {
-            data = JSON.parse(raw);
-          } catch (parseError) {
-            console.error("CRITICAL ERROR: JSON parse error", parseError);
-            alert('Corrupted data in memory. Please copy again.');
-            return;
-          }
+  if (assignedWorkersEl) $(assignedWorkersEl).on('change', checkQuickAssign);
+  if (branchEl) branchEl.addEventListener('input', checkQuickAssign);
+  if (warehouseEl) warehouseEl.addEventListener('change', checkQuickAssign);
+  checkQuickAssign();
 
-          if (Object.keys(data).length === 0) {
-            alert('No data to paste!');
-            return;
-          }
+  // ── 5. Copy / Paste Engine ─────────────────────────────────────────────────
+  const copyBtn = document.getElementById('btn-copy-data');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', function() {
+      try {
+        // EXACT TARGETING: Ignore navbars/search bars, grab the main job form
+        const targetForm = document.getElementById('job-form');
+        if (!targetForm) throw new Error("Job form not found.");
 
-          const EXCLUDED_FIELDS = [
-            'csrfmiddlewaretoken', 'id', 'certificate_number', 'status',
-            'datetime_commenced', 'datetime_completed', 'assigned_workers', 'assigned_to',
-            'execution_date', 'scheduled_date'
-          ];
+        const EXCLUDED_FIELDS = [
+          'csrfmiddlewaretoken', 'id', 'certificate_number', 'status',
+          'datetime_commenced', 'datetime_completed', 'assigned_workers', 'assigned_to',
+          'execution_date', 'scheduled_date'
+        ];
 
-          let appliedCount = 0;
-          let skippedCount = 0;
+        const data = {};
+        const fields = targetForm.querySelectorAll('input[name], select[name], textarea[name]');
+        
+        fields.forEach(element => {
+          if (EXCLUDED_FIELDS.includes(element.name)) return;
+          if (['submit', 'button', 'reset', 'image', 'hidden'].includes(element.type) && element.name !== 'is_third_party_vendor') return;
 
-          Object.keys(data).forEach(fieldName => {
-            try {
-              if (EXCLUDED_FIELDS.includes(fieldName)) {
-                skippedCount++;
-                return;
-              }
-
-              const value = data[fieldName];
-              const element = form.querySelector(`[name="${fieldName}"]`);
-              if (!element) {
-                skippedCount++;
-                return;
-              }
-
-              if (element.type === 'checkbox') {
-                element.checked = (value === true || value === 'true' || value === 'on' || value === '1');
-                appliedCount++;
-              } else if (element.type === 'radio') {
-                const allRadios = form.querySelectorAll(`[name="${fieldName}"][type="radio"]`);
-                allRadios.forEach(radio => {
-                  radio.checked = (radio.value === String(value));
-                });
-                appliedCount++;
-              } else if (element.tagName === 'SELECT') {
-                element.value = value;
-                if (window.$ && $(element).hasClass('select2-hidden-accessible')) {
-                  $(element).val(value).trigger('change');
-                } else {
-                  element.dispatchEvent(new Event('change', { bubbles: true }));
-                }
-                appliedCount++;
-              } else {
-                element.value = value || '';
-                element.dispatchEvent(new Event('change', { bubbles: true }));
-                element.dispatchEvent(new Event('input', { bubbles: true }));
-                appliedCount++;
-              }
-            } catch (fieldError) {
-              console.warn(`[Paste] Failed to apply field "${fieldName}":`, fieldError.message);
-              skippedCount++;
-            }
-          });
-
-          if (typeof Swal !== 'undefined') {
-            Swal.fire({
-              title: 'Data Pasted',
-              text: `Successfully pasted ${appliedCount} fields.`,
-              icon: 'success',
-              timer: 1500,
-              showConfirmButton: false
-            });
+          if (element.type === 'checkbox') {
+            data[element.name] = element.checked;
+          } else if (element.type === 'radio') {
+            if (element.checked) data[element.name] = element.value;
           } else {
-            alert(`Successfully pasted ${appliedCount} fields.`);
+            data[element.name] = element.value;
           }
-        } catch (error) {
-          console.error("CRITICAL ERROR: ", error);
-          alert('Error pasting data: ' + error.message);
-        }
-      });
-    }
+        });
 
-  });
+        localStorage.setItem('copiedJob', JSON.stringify(data));
+        console.log("Copied payload:", data); // Debugging
+
+        const originalHTML = copyBtn.innerHTML;
+        copyBtn.innerHTML = '✅ Copied!';
+        copyBtn.disabled = true;
+        
+        setTimeout(() => {
+          copyBtn.innerHTML = originalHTML;
+          copyBtn.disabled = false;
+        }, 2000);
+      } catch (error) {
+        console.error("Copy Error:", error);
+        alert('Error copying data: ' + error.message);
+      }
+    });
+  }
+
+  const pasteBtn = document.getElementById('btn-paste-data');
+  if (pasteBtn) {
+    pasteBtn.addEventListener('click', function() {
+      try {
+        const targetForm = document.getElementById('job-form');
+        if (!targetForm) throw new Error("Job form not found.");
+
+        const raw = localStorage.getItem('copiedJob');
+        if (!raw) {
+          alert('No data to paste! Please click "Copy Data" from another job first.');
+          return;
+        }
+
+        const data = JSON.parse(raw);
+        if (Object.keys(data).length === 0) {
+          alert('Copied data is empty.');
+          return;
+        }
+
+        let appliedCount = 0;
+
+        Object.keys(data).forEach(fieldName => {
+          const value = data[fieldName];
+          // Try to find the element inside the target form
+          const element = targetForm.querySelector(`[name="${fieldName}"]`);
+          if (!element) return; // Skip if this field isn't on the page
+
+          if (element.type === 'checkbox') {
+            element.checked = (value === true || value === 'true');
+            appliedCount++;
+          } else if (element.type === 'radio') {
+            const radio = targetForm.querySelector(`[name="${fieldName}"][value="${value}"]`);
+            if (radio) radio.checked = true;
+            appliedCount++;
+          } else if (element.tagName === 'SELECT') {
+            element.value = value;
+            if (window.$ && $(element).hasClass('select2-hidden-accessible')) {
+              $(element).trigger('change'); // Update Select2 UI
+            } else {
+              element.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+            appliedCount++;
+          } else {
+            element.value = value || '';
+            appliedCount++;
+          }
+        });
+
+        // Trigger logic toggles (like Third Party vendor)
+        if (typeof toggleThirdPartyFields === 'function') toggleThirdPartyFields();
+
+        const originalHTML = pasteBtn.innerHTML;
+        pasteBtn.innerHTML = '✅ Pasted!';
+        pasteBtn.disabled = true;
+        
+        setTimeout(() => {
+          pasteBtn.innerHTML = originalHTML;
+          pasteBtn.disabled = false;
+        }, 2000);
+      } catch (error) {
+        console.error("Paste Error:", error);
+        alert('Error pasting data: ' + error.message);
+      }
+    });
+  }
+
+  // ── 6. Modals Initialization ───────────────────────────────────────────────
+  window.quickEditModal = new bootstrap.Modal(document.getElementById('quickEditModal'));
+});
+
+// ── Global Functions (Called by HTML onclick) ──────────────────────────────
+function openQuickEditModal(entityType, action) {
+  const selectEl = document.getElementById(`id_${entityType}`);
+  const modalTitle = document.getElementById('quickEditModalTitle');
+  
+  document.getElementById('qe_entity_type').value = entityType;
+  document.getElementById('quickEditForm').reset();
+  
+  const EntityLabel = entityType === 'cha' ? 'CHA' : 'Exporter';
+
+  if (action === 'add') {
+    document.getElementById('qe_id').value = '';
+    modalTitle.innerText = `Add New ${EntityLabel}`;
+    window.quickEditModal.show();
+  } else if (action === 'edit') {
+    const selectedId = selectEl.value;
+    if (!selectedId) {
+      alert(`Please select a ${EntityLabel} to edit first.`);
+      return;
+    }
+    
+    document.getElementById('qe_id').value = selectedId;
+    modalTitle.innerText = `Edit ${EntityLabel}`;
+    
+    fetch(`/office/api/${entityType}/${selectedId}/`)
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('qe_name').value = data.name || '';
+        document.getElementById('qe_contact_person').value = data.contact_person || '';
+        document.getElementById('qe_mobile_number').value = data.mobile_number || '';
+        document.getElementById('qe_address').value = data.address || '';
+        window.quickEditModal.show();
+      })
+      .catch(err => { alert('Error fetching details.'); console.error(err); });
+  }
+}
+
+document.getElementById('quickEditSaveBtn').addEventListener('click', function() {
+  const entityType = document.getElementById('qe_entity_type').value;
+  const data = {
+    id: document.getElementById('qe_id').value,
+    name: document.getElementById('qe_name').value,
+    contact_person: document.getElementById('qe_contact_person').value,
+    mobile_number: document.getElementById('qe_mobile_number').value,
+    address: document.getElementById('qe_address').value,
+  };
+
+  if (!data.name) return alert("Name is required.");
+
+  const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+  const btn = this;
+  const originalText = btn.innerText;
+  btn.disabled = true;
+  btn.innerText = 'Saving...';
+
+  fetch(`/office/api/${entityType}/save/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+    body: JSON.stringify(data)
+  })
+  .then(r => r.json())
+  .then(res => {
+    btn.disabled = false;
+    btn.innerText = originalText;
+    if (res.success) {
+      const selectEl = document.getElementById(`id_${entityType}`);
+      if (!data.id) {
+        selectEl.add(new Option(res.name, res.id, true, true));
+      } else {
+        const option = selectEl.querySelector(`option[value="${res.id}"]`);
+        if (option) option.text = res.name;
+      }
+      window.quickEditModal.hide();
+    } else alert("Failed to save: " + JSON.stringify(res.errors));
+  })
+  .catch(err => { btn.disabled = false; btn.innerText = originalText; alert("Network error."); });
+});
+
+document.getElementById('createClientSaveBtn').addEventListener('click', function() {
+  const name = document.getElementById('cc_name').value.trim();
+  if (!name) return alert("Please provide a client name.");
+  
+  const data = {
+    name: name,
+    address: document.getElementById('cc_address').value,
+    city: document.getElementById('cc_city').value,
+    country: document.getElementById('cc_country').value
+  };
+
+  const btn = this;
+  btn.disabled = true;
+  btn.innerText = "Saving...";
+
+  fetch("{% url 'api_create_client' %}", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+    },
+    body: JSON.stringify(data)
+  })
+  .then(response => response.json())
+  .then(result => {
+    btn.disabled = false;
+    btn.innerText = "Save Client";
+    if (result.success) {
+      bootstrap.Modal.getInstance(document.getElementById('createClientModal')).hide();
+      document.getElementById('createClientForm').reset();
+      document.getElementById('id_client').add(new Option(result.name, result.id, true, true));
+      Swal.fire('Success', `Client "${result.name}" added successfully!`, 'success');
+    } else alert("Error creating client: " + JSON.stringify(result.errors));
+  })
+  .catch(error => { btn.disabled = false; btn.innerText = "Save Client"; alert("Network error."); });
+});
 </script>
 {% endblock %}
 

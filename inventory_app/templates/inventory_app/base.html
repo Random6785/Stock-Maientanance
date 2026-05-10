@@ -162,6 +162,15 @@
             z-index: 1000;
             padding-bottom: env(safe-area-inset-bottom);
         }
+        .nav-magic-line {
+            position: absolute;
+            bottom: 0;
+            height: 3px;
+            background: #2563eb;
+            border-radius: 3px 3px 0 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+        }
 
         .nav-item {
             text-decoration: none;
@@ -298,6 +307,41 @@
     <script>
         // Handle history button — navigate to job_list then scroll to completed section
         document.addEventListener('DOMContentLoaded', function() {
+            const navContainer = document.querySelector('.bottom-nav');
+            if (navContainer) {
+                const navLinks = navContainer.querySelectorAll('.nav-item');
+                if (navLinks.length) {
+                    const magicLine = document.createElement('span');
+                    magicLine.className = 'nav-magic-line';
+                    navContainer.appendChild(magicLine);
+
+                    let activeLink = navContainer.querySelector('.nav-item.active') || navLinks[0];
+
+                    function moveMagicLine(target) {
+                        if (!target) return;
+                        magicLine.style.width = target.offsetWidth + 'px';
+                        magicLine.style.left = target.offsetLeft + 'px';
+                    }
+
+                    moveMagicLine(activeLink);
+
+                    navLinks.forEach(function(link) {
+                        link.addEventListener('mouseenter', function() {
+                            moveMagicLine(link);
+                        });
+                    });
+
+                    navContainer.addEventListener('mouseleave', function() {
+                        moveMagicLine(activeLink);
+                    });
+
+                    window.addEventListener('resize', function() {
+                        activeLink = navContainer.querySelector('.nav-item.active') || activeLink || navLinks[0];
+                        moveMagicLine(activeLink);
+                    });
+                }
+            }
+
             const historyBtn = document.getElementById('history-btn');
             if (historyBtn) {
                 historyBtn.addEventListener('click', function(e) {

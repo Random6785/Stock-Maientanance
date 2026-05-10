@@ -226,10 +226,25 @@
     margin-bottom: 1rem;
     opacity: 0.35;
   }
+
+  .btn-premium-hover {
+    transition: all 0.2s ease-in-out;
+  }
+
+  .btn-premium-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+
+  .btn-premium-hover:active {
+    transform: translateY(0);
+    box-shadow: none;
+  }
 </style>
 {% endblock %}
 
 {% block content %}
+<div class="container-xl px-0">
 
 <!-- ── Page header ─────────────────────────────────────────────────────────── -->
 <div class="d-flex align-items-center justify-content-between mb-4">
@@ -289,7 +304,7 @@
     <div class="row g-3 flex-grow-1">
       <div class="col-6 d-flex">
         <a href="{% url 'office_item_create' %}"
-          class="btn btn-light d-flex flex-column align-items-center justify-content-center w-100 shadow-sm rounded-4 border p-3"
+          class="btn btn-light btn-premium-hover d-flex flex-column align-items-center justify-content-center w-100 shadow-sm rounded-4 border p-3"
           style="aspect-ratio: 1/1; transition: transform 0.2s;">
           <i class="ti ti-flask mb-2 text-primary" style="font-size: 2.2rem;"></i>
           <span class="fw-bold text-dark" style="font-size: 1.1rem; white-space: normal;">Add Inventory Item</span>
@@ -297,7 +312,7 @@
       </div>
       <div class="col-6 d-flex">
         <a href="{% url 'office_location_create' %}"
-          class="btn btn-light d-flex flex-column align-items-center justify-content-center w-100 shadow-sm rounded-4 border p-3"
+          class="btn btn-light btn-premium-hover d-flex flex-column align-items-center justify-content-center w-100 shadow-sm rounded-4 border p-3"
           style="aspect-ratio: 1/1; transition: transform 0.2s;">
           <i class="ti ti-building-warehouse mb-2 text-primary" style="font-size: 2.2rem;"></i>
           <span class="fw-bold text-dark" style="font-size: 1.1rem; white-space: normal;">Add Location</span>
@@ -306,7 +321,7 @@
     </div>
     <div class="d-flex gap-3 flex-grow-1">
       <a href="{% url 'office_stock_list' %}"
-        class="btn btn-light d-flex flex-column align-items-center justify-content-center flex-grow-1 shadow-sm rounded-4 border p-3 h-100"
+        class="btn btn-light btn-premium-hover d-flex flex-column align-items-center justify-content-center flex-grow-1 shadow-sm rounded-4 border p-3 h-100"
         style="transition: transform 0.2s;">
         <i class="ti ti-report-analytics mb-2 text-primary" style="font-size: 1.8rem;"></i>
         <span class="fw-bold text-dark" style="font-size: 1rem;">Add New Stock</span>
@@ -358,7 +373,7 @@
     </div>
   </div>
 
-  <div class="table-responsive">
+  <div class="table-responsive" style="overflow-x: auto; white-space: nowrap;">
     <table class="table table-hover matrix-table mb-0">
       <thead>
         <tr>
@@ -418,7 +433,7 @@
           </td>
           {% endfor %}
           <td style="text-align: right;">
-            <a href="{% url 'office_item_edit' row.item.id %}" class="btn btn-sm btn-outline-primary"
+            <a href="{% url 'office_item_edit' row.item.id %}" class="btn btn-sm btn-outline-primary btn-premium-hover"
               style="border-radius: 6px; font-weight: 600;">Edit Item</a>
           </td>
         </tr>
@@ -444,6 +459,7 @@
       </tbody>
     </table>
   </div>
+</div>
 </div>
 
 {% endblock %}
