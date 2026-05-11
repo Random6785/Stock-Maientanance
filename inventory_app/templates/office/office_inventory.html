@@ -240,6 +240,28 @@
     transform: translateY(0);
     box-shadow: none;
   }
+
+  .btn-inv-action {
+    border: 2px solid #e2e8f0 !important;
+    background: #ffffff !important;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02) !important;
+  }
+
+  .btn-inv-action:hover {
+    border-color: #3b82f6 !important;
+    transform: translateY(-4px) !important;
+    box-shadow: 0 10px 20px rgba(59, 130, 246, 0.15) !important;
+  }
+
+  .btn-inv-action i {
+    transition: transform 0.3s ease;
+  }
+
+  .btn-inv-action:hover i {
+    transform: scale(1.15);
+    color: #2563eb !important;
+  }
 </style>
 {% endblock %}
 
@@ -262,7 +284,7 @@
 <!-- ── Action Buttons & Total Inventory  ─────────────────────────────────────── -->
 <div class="row gap-0 mb-4 align-items-stretch">
   <!-- Total Inventory Banner -->
-  <div class="col-lg-7 mb-3 mb-lg-0 pe-lg-2">
+  <div class="col-md-6 col-xl-7 mb-3 mb-md-0 pe-md-2">
     <div class="card text-white h-100 border-0 shadow-sm rounded-4 overflow-hidden position-relative"
       style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);">
       <div class="position-absolute end-0 bottom-0 opacity-10" style="transform: translate(15%, 25%);">
@@ -300,20 +322,20 @@
   </div>
 
   <!-- Big Action Buttons -->
-  <div class="col-lg-5 ps-lg-2 d-flex flex-column gap-3">
+  <div class="col-md-6 col-xl-5 ps-md-2 d-flex flex-column gap-3">
     <div class="row g-3 flex-grow-1">
       <div class="col-6 d-flex">
         <a href="{% url 'office_item_create' %}"
-          class="btn btn-light btn-premium-hover d-flex flex-column align-items-center justify-content-center w-100 shadow-sm rounded-4 border p-3"
-          style="aspect-ratio: 1/1; transition: transform 0.2s;">
+          class="btn btn-inv-action d-flex flex-column align-items-center justify-content-center w-100 rounded-4 p-3"
+          style="aspect-ratio: 1/1;">
           <i class="ti ti-flask mb-2 text-primary" style="font-size: 2.2rem;"></i>
           <span class="fw-bold text-dark" style="font-size: 1.1rem; white-space: normal;">Add Inventory Item</span>
         </a>
       </div>
       <div class="col-6 d-flex">
         <a href="{% url 'office_location_create' %}"
-          class="btn btn-light btn-premium-hover d-flex flex-column align-items-center justify-content-center w-100 shadow-sm rounded-4 border p-3"
-          style="aspect-ratio: 1/1; transition: transform 0.2s;">
+          class="btn btn-inv-action d-flex flex-column align-items-center justify-content-center w-100 rounded-4 p-3"
+          style="aspect-ratio: 1/1;">
           <i class="ti ti-building-warehouse mb-2 text-primary" style="font-size: 2.2rem;"></i>
           <span class="fw-bold text-dark" style="font-size: 1.1rem; white-space: normal;">Add Location</span>
         </a>
@@ -321,8 +343,7 @@
     </div>
     <div class="d-flex gap-3 flex-grow-1">
       <a href="{% url 'office_stock_list' %}"
-        class="btn btn-light btn-premium-hover d-flex flex-column align-items-center justify-content-center flex-grow-1 shadow-sm rounded-4 border p-3 h-100"
-        style="transition: transform 0.2s;">
+        class="btn btn-inv-action d-flex flex-column align-items-center justify-content-center flex-grow-1 rounded-4 p-3 h-100">
         <i class="ti ti-report-analytics mb-2 text-primary" style="font-size: 1.8rem;"></i>
         <span class="fw-bold text-dark" style="font-size: 1rem;">Add New Stock</span>
       </a>

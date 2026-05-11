@@ -226,18 +226,31 @@
 {% block extra_js %}
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-  // Restore focus based on sessionStorage
-  const activeInputName = sessionStorage.getItem('lastFocusedInput');
-  if (activeInputName) {
-    const input = document.querySelector(`input[name="${activeInputName}"]`);
-    if (input && input.value.length > 0) {
-      input.focus();
-      const len = input.value.length;
-      if (input.setSelectionRange) {
-        input.setSelectionRange(len, len);
+  /**
+   * Restore focus to the last active search/filter input.
+   * 
+   * Key fix: Check if window.location.search has ANY query parameters.
+   * This indicates that a form submission (search/filter/clear) just occurred.
+   * If true, restore focus regardless of whether the input value is empty.
+   * This fixes the bug where clearing the last character would lose focus.
+   */
+  const hasQueryParams = window.location.search.length > 0;
+  
+  if (hasQueryParams) {
+    // A filter/search just happened, restore focus to the input that triggered it
+    const activeInputName = sessionStorage.getItem('lastFocusedInput');
+    if (activeInputName) {
+      const input = document.querySelector(`input[name="${activeInputName}"]`);
+      if (input) {
+        // Focus the input and set cursor to end, even if value is empty
+        input.focus();
+        const len = input.value.length;
+        if (input.setSelectionRange) {
+          input.setSelectionRange(len, len);
+        }
       }
+      sessionStorage.removeItem('lastFocusedInput');
     }
-    sessionStorage.removeItem('lastFocusedInput');
   }
 
   // Live filter logic
@@ -245,20 +258,24 @@ document.addEventListener("DOMContentLoaded", function() {
   if (filterForm) {
     let debounceTimer;
     
-    // For text inputs
+    // For text inputs (live search)
     const textInputs = filterForm.querySelectorAll('input[type="text"]');
     textInputs.forEach(input => {
       input.addEventListener('input', function() {
+        // Store which input triggered the search (for focus restoration after reload)
         sessionStorage.setItem('lastFocusedInput', input.name);
         clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(() => { filterForm.submit(); }, 500);
+        debounceTimer = setTimeout(() => { 
+          filterForm.submit(); 
+        }, 500);
       });
     });
 
-    // For date and select inputs
+    // For date and select inputs (immediate filter)
     const changeInputs = filterForm.querySelectorAll('input[type="date"], select');
     changeInputs.forEach(input => {
       input.addEventListener('change', function() {
+        // Store which input triggered the filter
         sessionStorage.setItem('lastFocusedInput', input.name);
         filterForm.submit();
       });
