@@ -6,6 +6,7 @@ App is LIVE at https://stock-maientanance.onrender.com
 To explore the admin features and workflow, use the following credentials on the login page:
 
 Username: admin
+
 Password: admin
 
 ## 🚀 Project Overview
