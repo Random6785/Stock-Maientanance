@@ -2,6 +2,12 @@
 App is LIVE at https://stock-maientanance.onrender.com
 > An enterprise-grade workflow and inventory management system designed to digitize field operations, chemical tracking, and compliance documentation for pest control agencies.
 
+🔑 Demo Access
+To explore the admin features and workflow, use the following credentials on the login page:
+
+Username: admin
+Password: admin
+
 ## 🚀 Project Overview
 
 Pest Control OS is a centralized backend application that eliminates manual record-keeping for pest management businesses. It integrates warehouse inventory tracking with field worker dispatching, ensuring real-time visibility into chemical stock levels, job statuses, and export compliance. 
