@@ -21,6 +21,7 @@
       background: #f7f8fc;
       color: #1e293b;
       -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
     }
 
     /* ── Brand Header Bar ───────────────────────────────────────── */
@@ -272,6 +273,29 @@
       margin: 0 auto;
     }
 
+    /* ── Spatial page transition (implied directional slide) ───── */
+    .page-enter-right { animation: smoothInRight 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+    .page-enter-left { animation: smoothInLeft 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+    .page-exit-right { animation: smoothOutRight 0.3s cubic-bezier(0.4, 0, 1, 1) forwards; }
+    .page-exit-left { animation: smoothOutLeft 0.3s cubic-bezier(0.4, 0, 1, 1) forwards; }
+
+    @keyframes smoothInRight {
+      0% { transform: translateX(30px); opacity: 0; }
+      100% { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes smoothInLeft {
+      0% { transform: translateX(-30px); opacity: 0; }
+      100% { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes smoothOutRight {
+      0% { transform: translateX(0); opacity: 1; }
+      100% { transform: translateX(30px); opacity: 0; }
+    }
+    @keyframes smoothOutLeft {
+      0% { transform: translateX(0); opacity: 1; }
+      100% { transform: translateX(-30px); opacity: 0; }
+    }
+
     /* ── Stat Cards ─────────────────────────────────────────────── */
     .stat-card {
       border: none;
@@ -468,7 +492,7 @@
     {% endif %}
 
     <!-- Page content -->
-    <div class="page-body">
+    <div class="page-body" id="spatial-page-wrapper">
       {% block content %}{% endblock %}
     </div>
 
@@ -543,6 +567,90 @@
       window.addEventListener('resize', function () {
         activeLink = navContainer.querySelector('.nav-link.active') || activeLink || navLinks[0];
         moveMagicLine(activeLink);
+      });
+    });
+
+    /* Spatial page transition: sessionStorage navDirection + main nav clicks */
+    document.addEventListener('DOMContentLoaded', function () {
+      var wrapper = document.getElementById('spatial-page-wrapper');
+      if (wrapper) {
+        var dir = sessionStorage.getItem('navDirection');
+        if (dir === 'forward') {
+          wrapper.classList.add('page-enter-right');
+        } else if (dir === 'backward') {
+          wrapper.classList.add('page-enter-left');
+        }
+        sessionStorage.removeItem('navDirection');
+      }
+
+      var navContainer = document.querySelector('#main-nav-list');
+      if (!navContainer || !wrapper) return;
+
+      function getNavSpatialIndex(pathname) {
+        var p = pathname.split('?')[0];
+        if (p.length > 1 && p.charAt(p.length - 1) === '/') {
+          p = p.slice(0, -1);
+        }
+        if (p.indexOf('/office/dashboard') !== -1) return 0;
+        if (p === '/office' || p.endsWith('/office')) return 0;
+        if (p.indexOf('/office/jobs/create') !== -1) return 2;
+        if (p.indexOf('/office/jobs') !== -1) return 1;
+        if (p.indexOf('/office/workers') !== -1) return 3;
+        if (p.indexOf('/inventory/report') !== -1) return 5;
+        if (p.indexOf('/office/inventory') !== -1) return 4;
+        return -1;
+      }
+
+      var currentPath = window.location.pathname.split('?')[0];
+      if (currentPath.length > 1 && currentPath.charAt(currentPath.length - 1) === '/') {
+        currentPath = currentPath.slice(0, -1);
+      }
+      var currentIndex = getNavSpatialIndex(currentPath);
+
+      navContainer.querySelectorAll('a.nav-link[href]').forEach(function (link) {
+        link.addEventListener('click', function (e) {
+          if (e.defaultPrevented) return;
+          if (e.button !== 0) return;
+          if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+          if (link.getAttribute('target') === '_blank') return;
+          var href = link.getAttribute('href');
+          if (!href || href.charAt(0) === '#') return;
+
+          var url;
+          try {
+            url = new URL(href, window.location.origin);
+          } catch (err) {
+            return;
+          }
+          if (url.origin !== window.location.origin) return;
+
+          var targetPath = url.pathname;
+          if (targetPath.length > 1 && targetPath.charAt(targetPath.length - 1) === '/') {
+            targetPath = targetPath.slice(0, -1);
+          }
+          var targetIndex = getNavSpatialIndex(targetPath);
+          if (currentIndex < 0 || targetIndex < 0) return;
+          if (targetIndex === currentIndex && targetPath === currentPath) return;
+
+          e.preventDefault();
+
+          if (targetIndex > currentIndex) {
+            sessionStorage.setItem('navDirection', 'forward');
+            wrapper.classList.remove('page-exit-right', 'page-exit-left');
+            void wrapper.offsetWidth;
+            wrapper.classList.add('page-exit-left');
+          } else {
+            sessionStorage.setItem('navDirection', 'backward');
+            wrapper.classList.remove('page-exit-right', 'page-exit-left');
+            void wrapper.offsetWidth;
+            wrapper.classList.add('page-exit-right');
+          }
+
+          var dest = url.pathname + url.search + url.hash;
+          setTimeout(function () {
+            window.location.href = dest;
+          }, 300);
+        });
       });
     });
 

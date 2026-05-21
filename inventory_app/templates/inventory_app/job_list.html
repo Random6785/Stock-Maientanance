@@ -25,9 +25,9 @@
             <div id="collapse{{ job.id }}" class="accordion-collapse collapse" aria-labelledby="heading{{ job.id }}" data-bs-parent="#jobsAccordion">
                 <div class="accordion-body bg-light pt-4 pb-4 px-4" style="border-top: 1px solid #f1f5f9;">
                     <p class="fs-6 lh-lg mb-4" style="color: #475569; font-weight: 500;">
-                        Take <span class="badge bg-warning text-dark px-2 py-1 shadow-sm" style="font-size: 0.9em;">{{ job.chemical_amount|default:"___" }} {{ job.chemical_unit|default:"" }} of {{ job.chemical_item|default:"___" }}</span> 
+                        Take <span class="badge bg-warning text-dark px-2 py-1 shadow-sm" style="font-size: 0.9em;">{{ job.task_description|default:"[No chemicals assigned]" }}</span> 
                         from <span class="badge bg-secondary px-2 py-1 shadow-sm" style="font-size: 0.9em;">{{ job.stock_warehouse.name|default:"Warehouse" }}</span> 
-                        and go to <strong class="text-dark">{{ job.execution_address|default:"___" }}</strong> for <strong>{{ job.title|default:"Job" }}</strong>.
+                        and go to <strong class="text-dark">{{ job.execution_address|default:"[No Address]" }}</strong> for <strong>{{ job.title|default:"Job" }}</strong>.
                     </p>
                     <div class="text-center">
                         <a href="{% url 'job_detail' job.id %}" class="btn btn-primary w-100 py-3 fw-bold fs-6 rounded-3 shadow-sm" style="background: linear-gradient(135deg, #2563eb, #3b82f6); border: none;">
@@ -58,9 +58,9 @@
             <div id="collapse{{ job.id }}" class="accordion-collapse collapse" aria-labelledby="heading{{ job.id }}" data-bs-parent="#jobsAccordion">
                 <div class="accordion-body bg-light pt-4 pb-4 px-4" style="border-top: 1px solid #f1f5f9;">
                     <p class="fs-6 lh-lg mb-4" style="color: #475569; font-weight: 500;">
-                        Take <span class="badge bg-warning text-dark px-2 py-1 shadow-sm" style="font-size: 0.9em;">{{ job.chemical_amount|default:"___" }} {{ job.chemical_unit|default:"" }} of {{ job.chemical_item|default:"___" }}</span> 
+                        Take <span class="badge bg-warning text-dark px-2 py-1 shadow-sm" style="font-size: 0.9em;">{{ job.task_description|default:"[No chemicals assigned]" }}</span> 
                         from <span class="badge bg-secondary px-2 py-1 shadow-sm" style="font-size: 0.9em;">{{ job.stock_warehouse.name|default:"Warehouse" }}</span> 
-                        and go to <strong class="text-dark">{{ job.execution_address|default:"___" }}</strong> for <strong>{{ job.title|default:"Job" }}</strong>.
+                        and go to <strong class="text-dark">{{ job.execution_address|default:"[No Address]" }}</strong> for <strong>{{ job.title|default:"Job" }}</strong>.
                     </p>
                     <div class="text-center">
                         <a href="{% url 'job_detail' job.id %}" class="btn btn-primary w-100 py-3 fw-bold fs-6 rounded-3 shadow-sm" style="background: linear-gradient(135deg, #2563eb, #3b82f6); border: none;">
